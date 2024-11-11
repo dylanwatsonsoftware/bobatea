@@ -7,8 +7,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 
 val developerId: String by project
 val developerName: String by project
@@ -25,7 +23,6 @@ val jreVersion = JavaLanguageVersion.of(libs.versions.jre.get())
 plugins {
     kotlin("jvm") version libs.versions.kotlin apply false
     alias(libs.plugins.dokka)
-    alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.maven.publish) apply false
 }
 
@@ -37,11 +34,6 @@ allprojects {
 subprojects {
     plugins.withType<KotlinPluginWrapper>().configureEach {
         the<KotlinJvmProjectExtension>().jvmToolchain(jdkVersion.asInt())
-    }
-    plugins.withType<KtlintPlugin>().configureEach {
-        the<KtlintExtension>()
-            .version
-            .set(libs.versions.ktlint.get())
     }
     plugins.withType<MavenPublishBasePlugin> {
         configure<MavenPublishBaseExtension> {

@@ -1,7 +1,6 @@
 package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.RED
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.NonBlockingTerminal.Companion.KeyCodes.DOWN
@@ -17,25 +16,49 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.TreeSet
 
-
 class Boba {
     companion object {
-
         @JvmStatic
         fun main(args: Array<String>) {
             nonBlockingTerminal {
                 coordinates()
 
-                val selection = selectFromList(
-                    question = "What's your favourite number?",
-                    options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
-                )
+                val selection =
+                    selectFromList(
+                        question = "What's your favourite number?",
+                        options =
+                            listOf(
+                                "one",
+                                "two",
+                                "three",
+                                "four",
+                                "five",
+                                "six",
+                                "seven",
+                                "eight",
+                                "nine",
+                                "ten",
+                            ),
+                    )
                 println("You selected: $selection")
 
-                val multiSelections = selectMultipleFromList(
-                    question = "What are all your favourite numbers?",
-                    options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
-                )
+                val multiSelections =
+                    selectMultipleFromList(
+                        question = "What are all your favourite numbers?",
+                        options =
+                            listOf(
+                                "one",
+                                "two",
+                                "three",
+                                "four",
+                                "five",
+                                "six",
+                                "seven",
+                                "eight",
+                                "nine",
+                                "ten",
+                            ),
+                    )
                 println("You selected: $multiSelections")
             }
         }
@@ -81,6 +104,7 @@ class Boba {
 
         fun selectFromList(question: String, options: List<String>): String {
             var currentIndex = 0
+
             fun printList() {
                 clear()
                 println(color(question, GREEN))
@@ -136,6 +160,7 @@ class Boba {
             val selected = TreeSet<String>()
 
             var currentIndex = 0
+
             fun printList() {
                 clear()
                 println(color(question, GREEN))
@@ -143,19 +168,21 @@ class Boba {
                     val isSelected = selected.contains(item)
                     val isCursorHighlighted = index == currentIndex
 
-                    val prefix = if (isSelected && isCursorHighlighted) {
-                        "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
-                    } else if (isSelected) {
-                        color(
-                            " ✔ ", GREEN
-                        )
-                    } else if (isCursorHighlighted) {
-                        "[ ]"
-                    } else {
-                        "   "
-                    }
+                    val prefix =
+                        if (isSelected && isCursorHighlighted) {
+                            "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
+                        } else if (isSelected) {
+                            color(
+                                " ✔ ",
+                                GREEN,
+                            )
+                        } else if (isCursorHighlighted) {
+                            "[ ]"
+                        } else {
+                            "   "
+                        }
 
-                    if(isCursorHighlighted) {
+                    if (isCursorHighlighted) {
                         println(color("$prefix ${color(item, YELLOW)}", YELLOW))
                     } else {
                         println("$prefix $item")
@@ -219,9 +246,7 @@ class Boba {
 
 class ConsoleColors {
     companion object {
-        fun color(text: String, color: String): String {
-            return "$color$text${ConsoleColors.RESET}"
-        }
+        fun color(text: String, color: String): String = "$color$text${ConsoleColors.RESET}"
 
         // Reset
         const val RESET: String = "\u001b[0m" // Text Reset
@@ -298,7 +323,6 @@ class ConsoleColors {
     }
 }
 
-
 /**
  * Allows us to have a non-blocking terminal -
  *
@@ -325,14 +349,13 @@ class NonBlockingTerminal {
             ProcessBuilder("clear").inheritIO().start().waitFor()
         }
 
-
         enum class KeyCodes(val key: Int) {
             UP(65),
             DOWN(66),
             LEFT(68),
             RIGHT(67),
             ENTER(10),
-            SPACE(32);
+            SPACE(32),
         }
 
         fun getChar(): Int {
@@ -342,7 +365,6 @@ class NonBlockingTerminal {
                 }
             }
         }
-
 
         @Throws(IOException::class, InterruptedException::class)
         private fun setTerminalToCBreak() {
@@ -365,8 +387,8 @@ class NonBlockingTerminal {
                 arrayOf(
                     "sh",
                     "-c",
-                    cmd
-                )
+                    cmd,
+                ),
             )
         }
 
