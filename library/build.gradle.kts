@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-kotlin.explicitApi()
+//kotlin.explicitApi()
 
 dependencies {
     implementation(libs.kotlinx.coroutines)
