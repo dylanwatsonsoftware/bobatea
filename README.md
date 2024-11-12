@@ -1,9 +1,4 @@
-[![Codecov](https://img.shields.io/codecov/c/gh/dylanwatsonsoftware/bobatea)](https://app.codecov.io/gh/dylanwatsonsoftware/bobatea/)
-
-
-
-
-# BobaTea - Kotlin TUI
+# Boba Tea - Kotlin TUI
 
 <p>
     <a href="https://github.com/dylanwatsonsoftware/bobatea"><img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/bobatea.png" width="400" alt="Boba Tea"></a><br>
