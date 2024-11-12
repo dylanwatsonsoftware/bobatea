@@ -6,6 +6,6 @@ dependencyResolutionManagement.repositories.mavenCentral()
 
 rootProject.name = "jvm-library"
 
-include("library", "library-extension")
+include("library")
 include("sample")
 include("website")
