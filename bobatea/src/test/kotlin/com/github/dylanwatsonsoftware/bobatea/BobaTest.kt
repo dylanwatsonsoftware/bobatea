@@ -1,11 +1,10 @@
-package com.johndoe.library
+package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.dylanwatsonsoftware.bobatea.Boba
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.nonBlockingTerminal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ViewTest {
+class BobaTest {
     @Test
     fun test() {
         assertEquals(Boba::class.simpleName, "Boba")
