@@ -4,8 +4,8 @@ pluginManagement.repositories {
 }
 dependencyResolutionManagement.repositories.mavenCentral()
 
-rootProject.name = "jvm-library"
+rootProject.name = "bobatea"
 
-include("library")
+include("bobatea")
 include("sample")
 include("website")
