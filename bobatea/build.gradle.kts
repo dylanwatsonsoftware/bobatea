@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version libs.versions.kotlin
+    kotlin("jvm") version libs.versions.kotlin
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.kover)
     alias(libs.plugins.maven.publish)

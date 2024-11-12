@@ -1,10 +1,10 @@
 [versions]
 jdk = "21"
 jre = "8"
-kotlin = "2.0.21"
+kotlin = "1.9.20"
 
 [plugins]
-dokka = "org.jetbrains.dokka:1.9.20"
+dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
 kotlinx-kover = "org.jetbrains.kotlinx.kover:0.8.3"
 maven-publish = "com.vanniktech.maven.publish.base:0.29.0"
 git-publish = "org.ajoberstar.git-publish:4.2.2"
