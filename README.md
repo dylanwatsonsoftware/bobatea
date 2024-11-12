@@ -5,6 +5,8 @@
 
 # BobaTea - Kotlin TUI
 
+![BobaTea](https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/bobatea.png)
+
 <p>
     <a href="https://github.com/dylanwatsonsoftware/bobatea/releases"><img src="https://img.shields.io/github/release/dylanwatsonsoftware/bobatea.svg" alt="Latest Release"/></a>
     <a href="https://github.com/dylanwatsonsoftware/bobatea/actions"><img src="https://github.com/dylanwatsonsoftware/bobatea/actions/workflows/build.yml/badge.svg" alt="Build Status"/></a>
