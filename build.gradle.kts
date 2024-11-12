@@ -21,7 +21,7 @@ val jdkVersion = JavaLanguageVersion.of(libs.versions.jdk.get())
 val jreVersion = JavaLanguageVersion.of(libs.versions.jre.get())
 
 plugins {
-    kotlin("jvm") version libs.versions.kotlin apply false
+    kotlin("multiplatform") version "2.0.21" apply false
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish) apply false
 }
