@@ -41,22 +41,10 @@ class App {
                     )
                 println("You selected: $selection")
 
-                val multiSelections =
-                    selectMultipleFromList(
+                val multiSelections = selectMultipleFromList(
                         question = "What are all your favourite numbers?",
                         options =
-                        listOf(
-                            "one",
-                            "two",
-                            "three",
-                            "four",
-                            "five",
-                            "six",
-                            "seven",
-                            "eight",
-                            "nine",
-                            "ten",
-                        ),
+                        listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"),
                     )
                 println("You selected: $multiSelections")
             }
