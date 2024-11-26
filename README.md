@@ -11,6 +11,14 @@
 # Examples
 The full code for the examples can be viewed [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt)
 
+### Loading
+<img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/images/loading.gif" /><br/>
+```kotlin
+runLoading("Loading yo!") {
+    Thread.sleep(10000)
+}
+```
+
 ### Multi-select
 <img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/images/multiselect.gif" /><br/>
 ```kotlin
