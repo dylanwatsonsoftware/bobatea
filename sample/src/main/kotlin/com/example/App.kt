@@ -13,12 +13,17 @@ import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.getChar
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.nonBlockingTerminal
+import com.github.dylanwatsonsoftware.bobatea.LoadingIndicator.Companion.runLoading
 
 
 class App {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
+
+            runLoading("Loading yo!") {
+                Thread.sleep(10000)
+            }
             nonBlockingTerminal {
                 coordinates()
 
