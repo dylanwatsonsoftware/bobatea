@@ -13,6 +13,8 @@ import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.getChar
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.nonBlockingTerminal
+import com.github.dylanwatsonsoftware.bobatea.LoaderStyle
+import com.github.dylanwatsonsoftware.bobatea.LoaderStyle.SMALL_GREEN
 import com.github.dylanwatsonsoftware.bobatea.LoadingIndicator.Companion.runLoading
 
 
@@ -21,7 +23,7 @@ class App {
         @JvmStatic
         fun main(args: Array<String>) {
 
-            runLoading("Loading yo!") {
+            runLoading("Loading yo!", SMALL_GREEN) {
                 Thread.sleep(10000)
             }
             nonBlockingTerminal {
