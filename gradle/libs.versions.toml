@@ -1,6 +1,6 @@
 [versions]
 jdk = "21"
-jre = "11"
+jre = "8"
 kotlin = "1.9.20"
 
 [plugins]
