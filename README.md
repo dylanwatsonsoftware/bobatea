@@ -20,7 +20,7 @@ dependencies {
 }
 ```
 
-# Examples
+## Examples
 The full code for the examples can be viewed [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt)
 
 ### Loading
@@ -58,14 +58,10 @@ This simply shows how easy it easy to create custom navigation with the bobatea 
 <img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/images/coords.gif" /><br/>
 View the code for this example [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt#L65-L103)
 
-# Sample
+## Sample
 
 To run the sample:
 ```shell
 ./gradlew -p sample fatJar
 java -jar ./sample/build/libs/sample-0.1-standalone.jar
 ```
-
-## Usage
-
-Work in progress.
