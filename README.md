@@ -50,9 +50,10 @@ View the code for this example [here](https://github.com/dylanwatsonsoftware/bob
 ```gradle
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 dependencies {
-    implementation "com.github.dylanwatsonsoftware:bobatea:$version"
+    implementation 'com.github.dylanwatsonsoftware:bobatea:$version'
 }
 ```
 
