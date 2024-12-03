@@ -7,6 +7,19 @@
     <a href="https://docs.oracle.com/javase/8/"><img src="https://img.shields.io/badge/java-11+-informational" alt="Java"/></a>
 </p>
 
+## Download
+
+```gradle
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.dylanwatsonsoftware:bobatea:$version'
+}
+```
+
 # Examples
 The full code for the examples can be viewed [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt)
 
@@ -44,18 +57,6 @@ This simply shows how easy it easy to create custom navigation with the bobatea 
 
 <img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/images/coords.gif" /><br/>
 View the code for this example [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt#L65-L103)
-
-## Download
-
-```gradle
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-}
-dependencies {
-    implementation 'com.github.dylanwatsonsoftware:bobatea:$version'
-}
-```
 
 # Sample
 
