@@ -16,7 +16,7 @@ class Boba {
 
         fun selectFromList(question: String, options: List<String>): String {
             var currentIndex = 0
-            val startLine = 1 // Simplified: question is on line 0 (after clear)
+            val startLine = 0 // question is on line 0 (after clear)
 
             fun printList() {
                 clear()
@@ -143,7 +143,7 @@ class Boba {
         fun selectMultipleFromList(question: String, options: List<String>): MutableSet<String> {
             val selected = TreeSet<String>()
             var currentIndex = 0
-            val startLine = 1
+            val startLine = 0
 
             fun printList() {
                 clear()

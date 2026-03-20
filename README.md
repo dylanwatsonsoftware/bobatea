@@ -58,6 +58,29 @@ This simply shows how easy it easy to create custom navigation with the bobatea 
 <img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/images/coords.gif" /><br/>
 View the code for this example [here](https://github.com/dylanwatsonsoftware/bobatea/blob/main/sample/src/main/kotlin/com/example/App.kt#L65-L103)
 
+### Box Model Layout
+Boba Tea provides a flexible box model to format your text in the terminal.
+
+```kotlin
+val box = Box(
+    content = "Welcome to Boba Tea!",
+    padding = 1,
+    borderStyle = BorderStyle.ROUNDED,
+    color = CYAN
+)
+println(box.render())
+```
+
+### Click to Expand
+Create interactive components that expand when clicked or when the space/enter key is pressed.
+
+```kotlin
+expandable(
+    title = "Click me to see more!",
+    content = "You expanded the section! Surprise!"
+)
+```
+
 ## Sample
 
 To run the sample:
