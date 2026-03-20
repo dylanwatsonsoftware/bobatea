@@ -6,4 +6,5 @@ interface Terminal {
     suspend fun readEvent(): BobaEvent
     fun enableMouseTracking(allMotion: Boolean = false)
     fun disableMouseTracking()
+    fun size(): Pair<Int, Int>
 }

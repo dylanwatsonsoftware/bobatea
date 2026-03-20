@@ -62,6 +62,8 @@ class JvmTerminal : Terminal {
         System.out.flush()
     }
 
+    override fun size(): Pair<Int, Int> = 80 to 24
+
     fun getChar(): Int {
         while (true) {
             val read = System.`in`.read()

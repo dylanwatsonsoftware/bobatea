@@ -1,17 +1,53 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import kotlin.math.floor
+
+sealed class Dimension {
+    data object Auto : Dimension()
+    data class Fixed(val value: Int) : Dimension()
+    data class Percent(val percentage: Double) : Dimension()
+}
+
 abstract class BobaComponent(
     open var padding: Int = 0,
     open var margin: Int = 0,
     open var borderStyle: BorderStyle = BorderStyle.NONE,
-    open var color: String? = null
+    open var color: String? = null,
+    open var width: Dimension = Dimension.Auto,
+    open var maxWidth: Dimension = Dimension.Auto,
+    open var height: Dimension = Dimension.Auto,
+    open var maxHeight: Dimension = Dimension.Auto
 ) {
-    abstract fun render(): String
+    companion object {
+        val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]")
 
-    protected fun wrapInBox(content: String): String {
-        if (borderStyle == BorderStyle.NONE && padding == 0 && margin == 0 && color == null) {
+        fun visibleLength(s: String): Int {
+            return s.replace(ANSI_REGEX, "").length
+        }
+
+        fun resolveDimension(dimension: Dimension, available: Int?): Int? {
+            return when (dimension) {
+                is Dimension.Auto -> null
+                is Dimension.Fixed -> dimension.value
+                is Dimension.Percent -> {
+                    if (available != null) {
+                        floor(available * (dimension.percentage / 100.0)).toInt()
+                    } else {
+                        null
+                    }
+                }
+            }
+        }
+    }
+
+    abstract fun render(availableWidth: Int? = null, availableHeight: Int? = null): String
+
+    protected fun wrapInBox(content: String, availableWidth: Int? = null, availableHeight: Int? = null): String {
+        if (borderStyle == BorderStyle.NONE && padding == 0 && margin == 0 && color == null &&
+            width == Dimension.Auto && maxWidth == Dimension.Auto &&
+            height == Dimension.Auto && maxHeight == Dimension.Auto) {
             return content
         }
-        return Box(content, padding, margin, borderStyle, color).render()
+        return Box(content, padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
     }
 }

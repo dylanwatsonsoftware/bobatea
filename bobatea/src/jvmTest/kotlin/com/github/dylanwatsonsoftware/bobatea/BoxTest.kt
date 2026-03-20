@@ -80,4 +80,26 @@ class BoxTest {
         // Bottom border: └ + 12 * ─ + ┘ = 14 chars
         assertThat(lines[2]).isEqualTo("└────────────┘")
     }
+
+    @Test
+    fun `test box with fixed width and truncation`() {
+        val box = Box("Hello World", padding = 0, borderStyle = BorderStyle.NONE, width = Dimension.Fixed(5))
+        val rendered = box.render()
+        assertThat(rendered).isEqualTo("Hello")
+    }
+
+    @Test
+    fun `test box with fixed height and truncation`() {
+        val box = Box("Line 1\nLine 2\nLine 3", padding = 0, borderStyle = BorderStyle.NONE, height = Dimension.Fixed(2))
+        val rendered = box.render()
+        assertThat(rendered.lines()).hasSize(2)
+        assertThat(rendered).isEqualTo("Line 1\nLine 2")
+    }
+
+    @Test
+    fun `test box with percentage width`() {
+        val box = Box("Test", padding = 0, borderStyle = BorderStyle.NONE, width = Dimension.Percent(50.0))
+        val rendered = box.render(availableWidth = 10)
+        assertThat(rendered).isEqualTo("Test ")
+    }
 }

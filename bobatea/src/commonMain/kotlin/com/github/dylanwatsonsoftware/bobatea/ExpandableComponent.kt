@@ -11,12 +11,16 @@ class ExpandableComponent(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var color: String? = null,
+    override var width: Dimension = Dimension.Auto,
+    override var maxWidth: Dimension = Dimension.Auto,
+    override var height: Dimension = Dimension.Auto,
+    override var maxHeight: Dimension = Dimension.Auto
+) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
     var expanded = false
     var isHovered = false
 
-    override fun render(): String {
+    override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val result = StringBuilder()
         val icon = if (expanded) "▼" else "▶"
         val text = " $icon  $title "
@@ -35,7 +39,7 @@ class ExpandableComponent(
         result.append("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle\n")
         result.append("Press ${color("Q", GREEN)} to exit")
 
-        return wrapInBox(result.toString().trimEnd('\n'))
+        return wrapInBox(result.toString().trimEnd('\n'), availableWidth, availableHeight)
     }
 
     suspend fun interact(terminal: Terminal) {
