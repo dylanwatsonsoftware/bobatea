@@ -16,6 +16,7 @@ class Boba {
 
         fun selectFromList(question: String, options: List<String>): String {
             var currentIndex = 0
+            val startLine = 1 // Simplified: question is on line 0 (after clear)
 
             fun printList() {
                 clear()
@@ -46,32 +47,103 @@ class Boba {
 
             printList()
 
-            while (true) {
-                when (getChar()) {
-                    UP.key -> {
-                        moveUp()
-                        printList()
-                    }
+            enableMouseTracking()
+            try {
+                while (true) {
+                    when (val event = readEvent()) {
+                        is BobaEvent.Key -> {
+                            when (event.code) {
+                                UP.key -> {
+                                    moveUp()
+                                    printList()
+                                }
 
-                    DOWN.key -> {
-                        moveDown()
-                        printList()
-                    }
+                                DOWN.key -> {
+                                    moveDown()
+                                    printList()
+                                }
 
-                    SPACE.key, ENTER.key -> {
-                        val selected = options[currentIndex]
-                        deselect()
-                        printList()
-                        return selected
+                                SPACE.key, ENTER.key -> {
+                                    val selected = options[currentIndex]
+                                    deselect()
+                                    printList()
+                                    return selected
+                                }
+                            }
+                        }
+                        is BobaEvent.Mouse -> {
+                            if (event.action == MouseAction.PRESS) {
+                                val clickedIndex = event.y - startLine - 1
+                                if (clickedIndex in options.indices) {
+                                    if (clickedIndex == currentIndex) {
+                                        val selected = options[currentIndex]
+                                        deselect()
+                                        printList()
+                                        return selected
+                                    } else {
+                                        currentIndex = clickedIndex
+                                        printList()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+            } finally {
+                disableMouseTracking()
+            }
+        }
+
+        fun expandable(title: String, content: String) {
+            var expanded = false
+            val titleLine = 0
+
+            fun printExpandable() {
+                clear()
+                val prefix = if (expanded) "[-] " else "[+] "
+                println(color("$prefix$title", YELLOW))
+                if (expanded) {
+                    println(content)
+                }
+                println()
+                println("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle")
+                println("Press ${color("Q", GREEN)} to exit")
+            }
+
+            printExpandable()
+
+            enableMouseTracking()
+            try {
+                while (true) {
+                    when (val event = readEvent()) {
+                        is BobaEvent.Key -> {
+                            when (event.code) {
+                                SPACE.key, ENTER.key -> {
+                                    expanded = !expanded
+                                    printExpandable()
+                                }
+                                'q'.toInt(), 'Q'.toInt() -> return
+                            }
+                        }
+                        is BobaEvent.Mouse -> {
+                            if (event.action == MouseAction.PRESS) {
+                                if (event.y == titleLine + 1) {
+                                    expanded = !expanded
+                                    printExpandable()
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                disableMouseTracking()
             }
         }
 
         fun selectMultipleFromList(question: String, options: List<String>): MutableSet<String> {
             val selected = TreeSet<String>()
-
             var currentIndex = 0
+            val startLine = 1
 
             fun printList() {
                 clear()
@@ -128,29 +200,48 @@ class Boba {
 
             printList()
 
-            while (true) {
-                when (getChar()) {
-                    UP.key -> {
-                        moveUp()
-                        printList()
-                    }
+            enableMouseTracking()
+            try {
+                while (true) {
+                    when (val event = readEvent()) {
+                        is BobaEvent.Key -> {
+                            when (event.code) {
+                                UP.key -> {
+                                    moveUp()
+                                    printList()
+                                }
 
-                    DOWN.key -> {
-                        moveDown()
-                        printList()
-                    }
+                                DOWN.key -> {
+                                    moveDown()
+                                    printList()
+                                }
 
-                    SPACE.key -> {
-                        toggle(currentIndex)
-                        printList()
-                    }
+                                SPACE.key -> {
+                                    toggle(currentIndex)
+                                    printList()
+                                }
 
-                    ENTER.key -> {
-                        deselectIndex()
-                        printList()
-                        return selected
+                                ENTER.key -> {
+                                    deselectIndex()
+                                    printList()
+                                    return selected
+                                }
+                            }
+                        }
+                        is BobaEvent.Mouse -> {
+                            if (event.action == MouseAction.PRESS) {
+                                val clickedIndex = event.y - startLine - 1
+                                if (clickedIndex in options.indices) {
+                                    currentIndex = clickedIndex
+                                    toggle(currentIndex)
+                                    printList()
+                                }
+                            }
+                        }
                     }
                 }
+            } finally {
+                disableMouseTracking()
             }
         }
 
@@ -180,10 +271,53 @@ class Boba {
 
         fun getChar(): Int {
             while (true) {
-                if (System.`in`.available() != 0) {
-                    return System.`in`.read()
-                }
+                val read = System.`in`.read()
+                if (read != -1) return read
             }
+        }
+
+        fun readEvent(): BobaEvent {
+            val firstChar = getChar()
+            if (firstChar == 27) { // ESC
+                if (System.`in`.available() > 0) {
+                    val secondChar = System.`in`.read()
+                    if (secondChar == '['.toInt()) {
+                        val seq = StringBuilder()
+                        var nextChar: Int
+                        while (true) {
+                            nextChar = System.`in`.read()
+                            seq.append(nextChar.toChar())
+                            if (nextChar in 64..126) break
+                        }
+                        val s = seq.toString()
+                        if (s.startsWith("<")) { // SGR Mouse Protocol
+                            val parts = s.substring(1, s.length - 1).split(";")
+                            val button = parts[0].toInt()
+                            val x = parts[1].toInt()
+                            val y = parts[2].toInt()
+                            val action = if (s.endsWith("M")) MouseAction.PRESS else MouseAction.RELEASE
+                            return BobaEvent.Mouse(x, y, button, action)
+                        } else if (s == "A") return BobaEvent.Key(UP.key)
+                        else if (s == "B") return BobaEvent.Key(DOWN.key)
+                        else if (s == "C") return BobaEvent.Key(KeyCodes.RIGHT.key)
+                        else if (s == "D") return BobaEvent.Key(KeyCodes.LEFT.key)
+                    }
+                }
+                return BobaEvent.Key(firstChar)
+            }
+            return BobaEvent.Key(firstChar)
+        }
+
+        fun enableMouseTracking() {
+            print("\u001b[?1000h") // Enable basic mouse tracking
+            print("\u001b[?1006h") // Enable SGR extended mode
+            System.out.flush()
+        }
+
+        fun disableMouseTracking() {
+            print("\u001b[?1006l")
+            print("\u001b[?1000l")
+            System.out.flush()
         }
 
         @Throws(IOException::class, InterruptedException::class)
