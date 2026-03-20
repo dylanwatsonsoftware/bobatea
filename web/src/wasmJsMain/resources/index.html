@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobatea Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/css/xterm.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: monospace; }
+        h1 { color: #e0e0ff; margin-bottom: 16px; font-size: 1.5rem; letter-spacing: 2px; }
+        #terminal-container { border: 1px solid #444; border-radius: 8px; overflow: hidden; padding: 8px; background: #000; }
+    </style>
+</head>
+<body>
+    <h1>Bobatea Demo</h1>
+    <div id="terminal-container">
+        <div id="terminal"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/lib/xterm.js"></script>
+    <script>
+        // Initialize xterm.js
+        const term = new Terminal({
+            cursorBlink: true,
+            fontFamily: '"Cascadia Code", "Fira Mono", monospace',
+            fontSize: 14,
+            theme: {
+                background: '#000000',
+                foreground: '#e0e0e0',
+            },
+            cols: 100,
+            rows: 30,
+        });
+        term.open(document.getElementById('terminal'));
+        window._bobaterm = term;
+    </script>
+
+    <script type="module">
+        import { pushTerminalInput } from './bobatea-web.mjs';
+
+        // Wire xterm.js input to Kotlin
+        term.onData(data => {
+            pushTerminalInput(data);
+        });
+    </script>
+</body>
+</html>

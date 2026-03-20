@@ -9,3 +9,4 @@ rootProject.name = "bobatea"
 include("bobatea")
 include("sample")
 include("website")
+include("web")

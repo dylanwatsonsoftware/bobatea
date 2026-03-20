@@ -1,9 +1,5 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
-import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.disableMouseTracking
-import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.enableMouseTracking
-import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.readEvent
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
@@ -23,10 +19,13 @@ class ExpandableComponent(
     override fun render(): String {
         val result = StringBuilder()
         val icon = if (expanded) "▼" else "▶"
-        val text = " $icon $title "
+        val text = " $icon  $title "
 
-        val background = if (isHovered) ConsoleColors.CYAN_BACKGROUND else ConsoleColors.BLUE_BACKGROUND
-        val coloredTitle = color(text, background + ConsoleColors.WHITE_BOLD)
+        val coloredTitle = if (isHovered) {
+            color(text, ConsoleColors.WHITE_BACKGROUND + ConsoleColors.BLUE_BOLD)
+        } else {
+            color(text, ConsoleColors.BLUE_BACKGROUND_BRIGHT + ConsoleColors.WHITE_BOLD)
+        }
 
         result.append(coloredTitle).append("\n")
         if (expanded) {
@@ -39,39 +38,37 @@ class ExpandableComponent(
         return wrapInBox(result.toString().trimEnd('\n'))
     }
 
-    fun interact() {
+    suspend fun interact(terminal: Terminal) {
         val titleLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 
         fun printExpandable() {
-            clear()
-            println(render())
+            terminal.clear()
+            terminal.write(render() + "\n")
         }
 
         printExpandable()
 
-        enableMouseTracking(allMotion = true)
+        terminal.enableMouseTracking(allMotion = true)
         try {
             while (true) {
-                when (val event = readEvent()) {
+                when (val event = terminal.readEvent()) {
                     is BobaEvent.Key -> {
                         when (event.code) {
                             SPACE.key, ENTER.key -> {
                                 expanded = !expanded
                                 printExpandable()
                             }
-                            'q'.toInt(), 'Q'.toInt() -> return
+                            'q'.code, 'Q'.code -> return
                         }
                     }
                     is BobaEvent.Mouse -> {
-                        // Offset by 1 for mouse vs 0-indexed string logic if needed,
-                        // but event.x is usually 1-indexed.
                         val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
                         if (currentlyHovered != isHovered) {
                             isHovered = currentlyHovered
                             printExpandable()
                         }
 
-                        if (event.action == MouseAction.PRESS && isHovered) {
+                        if (event.action == MouseAction.PRESS && event.button < 64 && currentlyHovered) {
                             expanded = !expanded
                             printExpandable()
                         }
@@ -79,7 +76,7 @@ class ExpandableComponent(
                 }
             }
         } finally {
-            disableMouseTracking()
+            terminal.disableMouseTracking()
         }
     }
 }

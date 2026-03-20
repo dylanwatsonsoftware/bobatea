@@ -42,12 +42,14 @@ class ComponentTest {
             borderStyle = BorderStyle.ROUNDED
         )
         var rendered = comp.render()
-        assertThat(rendered).contains("▶ Title")
+        assertThat(rendered).contains("▶")
+        assertThat(rendered).contains("Title")
         assertThat(rendered).doesNotContain("Secret")
 
         comp.expanded = true
         rendered = comp.render()
-        assertThat(rendered).contains("▼ Title")
+        assertThat(rendered).contains("▼")
+        assertThat(rendered).contains("Title")
         assertThat(rendered).contains("Secret")
     }
 }

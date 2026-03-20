@@ -1,15 +1,25 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
-    kotlin("jvm") version libs.versions.kotlin
-    alias(libs.plugins.dokka)
-    alias(libs.plugins.kotlinx.kover)
-    alias(libs.plugins.maven.publish)
+    kotlin("multiplatform")
 }
 
-//kotlin.explicitApi()
+kotlin {
+    jvm()
 
-dependencies {
-    implementation(libs.kotlinx.coroutines)
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
 
-    testImplementation(kotlin("test-junit", libs.versions.kotlin.get()))
-    testImplementation(libs.truth)
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines)
+        }
+        jvmTest.dependencies {
+            implementation(kotlin("test-junit"))
+            implementation(libs.truth)
+        }
+    }
 }
