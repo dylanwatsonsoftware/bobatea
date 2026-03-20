@@ -36,12 +36,17 @@
         window._bobaterm = term;
     </script>
 
-    <script type="module">
-        import { pushTerminalInput } from './bobatea-web.mjs';
-
-        // Wire xterm.js input to Kotlin
+    <script src="./bobatea-web.js"></script>
+    <script>
+        // Wire xterm.js input to Kotlin (buffer keystrokes until WASM is ready)
+        const inputBuffer = [];
         term.onData(data => {
-            pushTerminalInput(data);
+            if (window.web && window.web.pushTerminalInput) {
+                while (inputBuffer.length > 0) window.web.pushTerminalInput(inputBuffer.shift());
+                window.web.pushTerminalInput(data);
+            } else {
+                inputBuffer.push(data);
+            }
         });
     </script>
 </body>
