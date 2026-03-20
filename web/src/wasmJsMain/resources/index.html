@@ -25,9 +25,14 @@
             padding: 2rem 1rem;
         }
 
+        @media (max-width: 640px) {
+            body { padding: 1rem 0.5rem; }
+        }
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
+            width: 100%;
         }
 
         header {
@@ -36,7 +41,7 @@
         }
 
         header img.logo {
-            max-width: 400px;
+            max-width: min(400px, 100%);
             height: auto;
             margin-bottom: 1.5rem;
         }
@@ -67,6 +72,11 @@
             border-radius: 0.75rem;
             margin-bottom: 2rem;
             border: 1px solid var(--border-color);
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 640px) {
+            section { padding: 1.25rem 1rem; }
         }
 
         pre {
@@ -102,6 +112,7 @@
             border-radius: 0.5rem;
             margin-bottom: 1rem;
             border: 1px solid var(--border-color);
+            display: block;
         }
 
         #terminal-section {
