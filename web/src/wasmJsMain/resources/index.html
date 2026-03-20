@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/css/xterm.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: monospace; }
-        h1 { color: #e0e0ff; margin-bottom: 16px; font-size: 1.5rem; letter-spacing: 2px; }
-        #terminal-container { border: 1px solid #444; border-radius: 8px; overflow: hidden; padding: 8px; background: #000; }
+        body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: monospace; padding: 16px; }
+        h1 { color: #e0e0ff; margin-bottom: 12px; font-size: 1.5rem; letter-spacing: 2px; }
+        #terminal-container { border: 1px solid #444; border-radius: 8px; overflow: hidden; padding: 4px; background: #000; width: 100%; max-width: 900px; }
     </style>
 </head>
 <body>
@@ -19,29 +19,35 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10/lib/addon-fit.js"></script>
     <script>
-        // Initialize xterm.js
+        const fitAddon = new FitAddon.FitAddon();
         const term = new Terminal({
             cursorBlink: true,
             fontFamily: '"Cascadia Code", "Fira Mono", monospace',
             fontSize: 14,
-            theme: {
-                background: '#000000',
-                foreground: '#e0e0e0',
-            },
-            cols: 100,
-            rows: 30,
+            theme: { background: '#000000', foreground: '#e0e0e0' },
         });
+        term.loadAddon(fitAddon);
         term.open(document.getElementById('terminal'));
+        fitAddon.fit();
+        window.addEventListener('resize', () => fitAddon.fit());
         window._bobaterm = term;
+
+        // Buffer keystrokes until Kotlin WASM exports are ready
+        const inputBuffer = [];
+        term.onData(data => {
+            if (window._bobaPush) window._bobaPush(data);
+            else inputBuffer.push(data);
+        });
     </script>
 
-    <script type="module">
-        import { pushTerminalInput } from './bobatea-web.mjs';
-
-        // Wire xterm.js input to Kotlin
-        term.onData(data => {
-            pushTerminalInput(data);
+    <script src="./bobatea-web.js"></script>
+    <script>
+        // window.web is a Promise (webpack async module) — wait for WASM to fully load
+        Promise.resolve(window.web).then(exports => {
+            window._bobaPush = exports.pushTerminalInput;
+            while (inputBuffer.length > 0) window._bobaPush(inputBuffer.shift());
         });
     </script>
 </body>
