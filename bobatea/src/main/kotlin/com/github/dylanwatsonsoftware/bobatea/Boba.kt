@@ -14,245 +14,37 @@ import java.util.TreeSet
 class Boba {
     companion object {
 
-        fun selectFromList(question: String, options: List<String>): String {
-            var currentIndex = 0
-            val startLine = 0 // question is on line 0 (after clear)
-
-            fun printList() {
-                clear()
-                println(color(question, GREEN))
-                options.forEachIndexed { index, item ->
-                    if (index == currentIndex) {
-                        println(color("❯ $item", YELLOW))
-                    } else {
-                        println("  $item")
-                    }
-                }
-                println()
-                println("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.")
-                println("${color("SPACE/ENTER", GREEN)} to confirm")
-            }
-
-            fun moveUp() {
-                currentIndex = (currentIndex - 1 + options.size) % options.size
-            }
-
-            fun moveDown() {
-                currentIndex = (currentIndex + 1) % options.size
-            }
-
-            fun deselect() {
-                currentIndex = -1
-            }
-
-            printList()
-
-            enableMouseTracking()
-            try {
-                while (true) {
-                    when (val event = readEvent()) {
-                        is BobaEvent.Key -> {
-                            when (event.code) {
-                                UP.key -> {
-                                    moveUp()
-                                    printList()
-                                }
-
-                                DOWN.key -> {
-                                    moveDown()
-                                    printList()
-                                }
-
-                                SPACE.key, ENTER.key -> {
-                                    val selected = options[currentIndex]
-                                    deselect()
-                                    printList()
-                                    return selected
-                                }
-                            }
-                        }
-                        is BobaEvent.Mouse -> {
-                            if (event.action == MouseAction.PRESS) {
-                                val clickedIndex = event.y - startLine - 2
-                                if (clickedIndex in options.indices) {
-                                    if (clickedIndex == currentIndex) {
-                                        val selected = options[currentIndex]
-                                        deselect()
-                                        printList()
-                                        return selected
-                                    } else {
-                                        currentIndex = clickedIndex
-                                        printList()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } finally {
-                disableMouseTracking()
-            }
+        fun selectFromList(
+            question: String,
+            options: List<String>,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ): String {
+            return SelectionList(question, options, padding, margin, borderStyle, color).interact()
         }
 
-        fun expandable(title: String, content: String) {
-            var expanded = false
-            var isHovered = false
-            val titleLine = 0
-
-            fun printExpandable() {
-                clear()
-                val icon = if (expanded) "▼" else "▶"
-                val text = " $icon $title "
-
-                val background = if (isHovered) ConsoleColors.CYAN_BACKGROUND else ConsoleColors.BLUE_BACKGROUND
-                val coloredTitle = ConsoleColors.color(text, background + ConsoleColors.WHITE_BOLD)
-
-                println(coloredTitle)
-                if (expanded) {
-                    println(content)
-                }
-                println()
-                println("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle")
-                println("Press ${color("Q", GREEN)} to exit")
-            }
-
-            printExpandable()
-
-            enableMouseTracking(allMotion = true)
-            try {
-                while (true) {
-                    when (val event = readEvent()) {
-                        is BobaEvent.Key -> {
-                            when (event.code) {
-                                SPACE.key, ENTER.key -> {
-                                    expanded = !expanded
-                                    printExpandable()
-                                }
-                                'q'.toInt(), 'Q'.toInt() -> return
-                            }
-                        }
-                        is BobaEvent.Mouse -> {
-                            val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
-                            if (currentlyHovered != isHovered) {
-                                isHovered = currentlyHovered
-                                printExpandable()
-                            }
-
-                            if (event.action == MouseAction.PRESS && isHovered) {
-                                expanded = !expanded
-                                printExpandable()
-                            }
-                        }
-                    }
-                }
-            } finally {
-                disableMouseTracking()
-            }
+        fun expandable(
+            title: String,
+            content: String,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ) {
+            ExpandableComponent(title, content, padding, margin, borderStyle, color).interact()
         }
 
-        fun selectMultipleFromList(question: String, options: List<String>): MutableSet<String> {
-            val selected = TreeSet<String>()
-            var currentIndex = 0
-            val startLine = 0
-
-            fun printList() {
-                clear()
-                println(color(question, GREEN))
-                options.forEachIndexed { index, item ->
-                    val isSelected = selected.contains(item)
-                    val isCursorHighlighted = index == currentIndex
-
-                    val prefix =
-                        if (isSelected && isCursorHighlighted) {
-                            "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
-                        } else if (isSelected) {
-                            color(
-                                " ✔ ",
-                                GREEN,
-                            )
-                        } else if (isCursorHighlighted) {
-                            "[ ]"
-                        } else {
-                            "   "
-                        }
-
-                    if (isCursorHighlighted) {
-                        println(color("$prefix ${color(item, YELLOW)}", YELLOW))
-                    } else {
-                        println("$prefix $item")
-                    }
-                }
-                println()
-                println("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.")
-                println("Press ${color("SPACE", GREEN)} to toggle selection")
-                println("${color("ENTER", GREEN)} to confirm")
-            }
-
-            fun moveUp() {
-                currentIndex = (currentIndex - 1 + options.size) % options.size
-            }
-
-            fun moveDown() {
-                currentIndex = (currentIndex + 1) % options.size
-            }
-
-            fun toggle(index: Int) {
-                if (selected.contains(options[index])) {
-                    selected.remove(options[index])
-                } else {
-                    selected.add(options[index])
-                }
-            }
-
-            fun deselectIndex() {
-                currentIndex = -1
-            }
-
-            printList()
-
-            enableMouseTracking()
-            try {
-                while (true) {
-                    when (val event = readEvent()) {
-                        is BobaEvent.Key -> {
-                            when (event.code) {
-                                UP.key -> {
-                                    moveUp()
-                                    printList()
-                                }
-
-                                DOWN.key -> {
-                                    moveDown()
-                                    printList()
-                                }
-
-                                SPACE.key -> {
-                                    toggle(currentIndex)
-                                    printList()
-                                }
-
-                                ENTER.key -> {
-                                    deselectIndex()
-                                    printList()
-                                    return selected
-                                }
-                            }
-                        }
-                        is BobaEvent.Mouse -> {
-                            if (event.action == MouseAction.PRESS) {
-                                val clickedIndex = event.y - startLine - 2
-                                if (clickedIndex in options.indices) {
-                                    currentIndex = clickedIndex
-                                    toggle(currentIndex)
-                                    printList()
-                                }
-                            }
-                        }
-                    }
-                }
-            } finally {
-                disableMouseTracking()
-            }
+        fun selectMultipleFromList(
+            question: String,
+            options: List<String>,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ): MutableSet<String> {
+            return MultiSelectionList(question, options, padding, margin, borderStyle, color).interact()
         }
 
         /**
