@@ -26,11 +26,14 @@ class WasmTerminal : Terminal {
     }
 
     override fun enableMouseTracking(allMotion: Boolean) {
-        // xterm.js handles mouse automatically
+        if (allMotion) jsWrite("\u001b[?1003h") else jsWrite("\u001b[?1000h")
+        jsWrite("\u001b[?1006h") // SGR extended mouse mode — xterm.js will send mouse events via onData
     }
 
     override fun disableMouseTracking() {
-        // xterm.js handles mouse automatically
+        jsWrite("\u001b[?1006l")
+        jsWrite("\u001b[?1003l")
+        jsWrite("\u001b[?1000l")
     }
 
     private fun parseInput(data: String): BobaEvent {
