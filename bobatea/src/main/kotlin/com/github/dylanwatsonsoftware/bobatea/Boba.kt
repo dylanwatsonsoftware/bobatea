@@ -73,7 +73,7 @@ class Boba {
                         }
                         is BobaEvent.Mouse -> {
                             if (event.action == MouseAction.PRESS) {
-                                val clickedIndex = event.y - startLine - 1
+                                val clickedIndex = event.y - startLine - 2
                                 if (clickedIndex in options.indices) {
                                     if (clickedIndex == currentIndex) {
                                         val selected = options[currentIndex]
@@ -96,12 +96,18 @@ class Boba {
 
         fun expandable(title: String, content: String) {
             var expanded = false
+            var isHovered = false
             val titleLine = 0
 
             fun printExpandable() {
                 clear()
-                val prefix = if (expanded) "[-] " else "[+] "
-                println(color("$prefix$title", YELLOW))
+                val icon = if (expanded) "▼" else "▶"
+                val text = " $icon $title "
+
+                val background = if (isHovered) ConsoleColors.CYAN_BACKGROUND else ConsoleColors.BLUE_BACKGROUND
+                val coloredTitle = ConsoleColors.color(text, background + ConsoleColors.WHITE_BOLD)
+
+                println(coloredTitle)
                 if (expanded) {
                     println(content)
                 }
@@ -112,7 +118,7 @@ class Boba {
 
             printExpandable()
 
-            enableMouseTracking()
+            enableMouseTracking(allMotion = true)
             try {
                 while (true) {
                     when (val event = readEvent()) {
@@ -126,11 +132,15 @@ class Boba {
                             }
                         }
                         is BobaEvent.Mouse -> {
-                            if (event.action == MouseAction.PRESS) {
-                                if (event.y == titleLine + 1) {
-                                    expanded = !expanded
-                                    printExpandable()
-                                }
+                            val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
+                            if (currentlyHovered != isHovered) {
+                                isHovered = currentlyHovered
+                                printExpandable()
+                            }
+
+                            if (event.action == MouseAction.PRESS && isHovered) {
+                                expanded = !expanded
+                                printExpandable()
                             }
                         }
                     }
@@ -230,7 +240,7 @@ class Boba {
                         }
                         is BobaEvent.Mouse -> {
                             if (event.action == MouseAction.PRESS) {
-                                val clickedIndex = event.y - startLine - 1
+                                val clickedIndex = event.y - startLine - 2
                                 if (clickedIndex in options.indices) {
                                     currentIndex = clickedIndex
                                     toggle(currentIndex)
@@ -292,11 +302,15 @@ class Boba {
                         val s = seq.toString()
                         if (s.startsWith("<")) { // SGR Mouse Protocol
                             val parts = s.substring(1, s.length - 1).split(";")
-                            val button = parts[0].toInt()
+                            val buttonInfo = parts[0].toInt()
                             val x = parts[1].toInt()
                             val y = parts[2].toInt()
-                            val action = if (s.endsWith("M")) MouseAction.PRESS else MouseAction.RELEASE
-                            return BobaEvent.Mouse(x, y, button, action)
+                            val action = when {
+                                (buttonInfo and 32) != 0 -> MouseAction.MOVE
+                                s.endsWith("M") -> MouseAction.PRESS
+                                else -> MouseAction.RELEASE
+                            }
+                            return BobaEvent.Mouse(x, y, buttonInfo, action)
                         } else if (s == "A") return BobaEvent.Key(UP.key)
                         else if (s == "B") return BobaEvent.Key(DOWN.key)
                         else if (s == "C") return BobaEvent.Key(KeyCodes.RIGHT.key)
@@ -308,14 +322,19 @@ class Boba {
             return BobaEvent.Key(firstChar)
         }
 
-        fun enableMouseTracking() {
-            print("\u001b[?1000h") // Enable basic mouse tracking
+        fun enableMouseTracking(allMotion: Boolean = false) {
+            if (allMotion) {
+                print("\u001b[?1003h") // Enable all motion tracking
+            } else {
+                print("\u001b[?1000h") // Enable basic mouse tracking
+            }
             print("\u001b[?1006h") // Enable SGR extended mode
             System.out.flush()
         }
 
         fun disableMouseTracking() {
             print("\u001b[?1006l")
+            print("\u001b[?1003l")
             print("\u001b[?1000l")
             System.out.flush()
         }
