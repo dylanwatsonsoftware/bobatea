@@ -22,6 +22,7 @@ val jreVersion = JavaLanguageVersion.of(libs.versions.jre.get())
 
 plugins {
     kotlin("jvm") version libs.versions.kotlin apply false
+    kotlin("multiplatform") version libs.versions.kotlin apply false
     alias(libs.plugins.dokka)
     alias(libs.plugins.maven.publish) apply false
 }
@@ -79,9 +80,6 @@ subprojects {
 }
 
 tasks {
-    register(LifecycleBasePlugin.CLEAN_TASK_NAME) {
-        delete(layout.buildDirectory)
-    }
     dokkaHtmlMultiModule {
         outputDirectory.set(layout.buildDirectory.dir("dokka/dokka/"))
     }

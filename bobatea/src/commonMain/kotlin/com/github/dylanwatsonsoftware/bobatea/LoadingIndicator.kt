@@ -1,72 +1,64 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import java.io.OutputStreamWriter
-import java.io.PrintWriter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class LoadingIndicator(
-    private val out: PrintWriter = PrintWriter(OutputStreamWriter(System.out)),
+    private val terminal: Terminal,
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
     override var color: String? = null
 ) : BobaComponent(padding, margin, borderStyle, color) {
     companion object {
-        fun <R> runLoading(
+        suspend fun <R> runLoading(
             message: String = "",
             style: LoaderStyle = LoaderStyle.DEFAULT,
+            terminal: Terminal,
             padding: Int = 0,
             margin: Int = 0,
             borderStyle: BorderStyle = BorderStyle.NONE,
             color: String? = null,
-            callback: () -> R
+            callback: suspend () -> R
         ): R {
-            return LoadingIndicator(padding = padding, margin = margin, borderStyle = borderStyle, color = color)
+            return LoadingIndicator(terminal = terminal, padding = padding, margin = margin, borderStyle = borderStyle, color = color)
                 .runLoading(message, style, callback)
         }
     }
 
-    override fun render(): String = "" // LoadingIndicator uses direct output stream
+    override fun render(): String = ""
 
-    fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
-        var result: R
-        runBlocking {
-            val job = launch(Dispatchers.Default) { show(message, style) }
-            val messageEraser = message.map { " " }.joinToString("")
-            result = callback()
+    suspend fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: suspend () -> R): R {
+        return coroutineScope {
+            val job = launch { show(message, style) }
+            val result = callback()
             job.cancelAndJoin()
-            out.print("\r   ${messageEraser}\r")
-            out.flush()
+            val messageEraser = message.map { " " }.joinToString("")
+            terminal.write("\r   $messageEraser\r")
+            result
         }
-        return result
     }
 
     suspend fun show(message: String, style: LoaderStyle) {
         val charSequence = style.pattern.asInfiniteSequence()
         val pen = createPen(style.color)
 
-        val marginStr = " ".repeat(margin)
-        val paddingStr = " ".repeat(padding)
-
         for (char in charSequence) {
             val loadingLine = "${pen(char.toString())} $message"
             val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                 Box(loadingLine, padding, margin, borderStyle, color).render()
+                Box(loadingLine, padding, margin, borderStyle, color).render()
             } else {
-                 "\r$loadingLine"
+                "\r$loadingLine"
             }
 
             if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                Boba.clear()
-                out.print(output)
+                terminal.clear()
+                terminal.write(output)
             } else {
-                out.print(output)
+                terminal.write(output)
             }
-            out.flush()
             delay(200)
         }
     }
@@ -77,42 +69,17 @@ enum class LoaderStyle(
     val color: TerminalColors? = null,
 ) {
     DEFAULT(LoaderPatten.SMALL),
-
     SMALL(LoaderPatten.SMALL),
     SMALL_GREEN(LoaderPatten.SMALL, TerminalColors.GREEN),
     SMALL_BLUE(LoaderPatten.SMALL, TerminalColors.BLUE),
-
     LARGE(LoaderPatten.LARGE),
     LARGE_GREEN(LoaderPatten.LARGE, TerminalColors.GREEN),
     LARGE_BLUE(LoaderPatten.LARGE, TerminalColors.BLUE),
 }
 
-enum class LoaderPatten(
-    val chars: List<Char>,
-) {
-    SMALL(
-        listOf(
-            '⠟',
-            '⠯',
-            '⠷',
-            '⠾',
-            '⠽',
-            '⠻',
-        ),
-    ),
-    LARGE(
-        listOf(
-            '⡿',
-            '⣟',
-            '⣯',
-            '⣷',
-            '⣾',
-            '⣽',
-            '⣻',
-            '⢿',
-        ),
-    ),
-    ;
+enum class LoaderPatten(val chars: List<Char>) {
+    SMALL(listOf('⠟', '⠯', '⠷', '⠾', '⠽', '⠻')),
+    LARGE(listOf('⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿'));
 
     fun asInfiniteSequence() = infiniteRange(0..chars.lastIndex).map { chars[it] }
 }
@@ -155,23 +122,14 @@ fun clearLine() = CursorMovement.CLEAR_LINE.value
 fun colour(txt: String, with: TerminalColors): String = "${with.value}${txt}${TerminalColors.RESET.value}"
 
 fun red(text: String): String = colour(text, with = TerminalColors.RED)
-
 fun green(text: String): String = colour(text, with = TerminalColors.GREEN)
-
 fun blue(text: String): String = colour(text, with = TerminalColors.BLUE)
-
 fun black(text: String): String = colour(text, with = TerminalColors.BLACK)
-
 fun yellow(text: String): String = colour(text, with = TerminalColors.YELLOW)
-
 fun purple(text: String): String = colour(text, with = TerminalColors.PURPLE)
-
 fun cyan(text: String): String = colour(text, with = TerminalColors.CYAN)
-
 fun white(text: String): String = colour(text, with = TerminalColors.WHITE)
 
 fun bold(text: String): String = "${Formatting.BOLD.value}${text}${TerminalColors.RESET.value}"
-
 fun underline(text: String): String = "${Formatting.UNDERLINE.value}${text}${TerminalColors.RESET.value}"
-
 fun createPen(penColor: TerminalColors?): (String) -> String = { if (penColor != null) colour(it, with = penColor) else it }

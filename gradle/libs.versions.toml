@@ -1,10 +1,12 @@
 [versions]
 jdk = "17"
 jre = "8"
-kotlin = "1.9.20"
+kotlin = "2.1.0"
+dokka = "1.9.20"
+coroutines = "1.9.0"
 
 [plugins]
-dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlinx-kover = "org.jetbrains.kotlinx.kover:0.8.3"
 maven-publish = "com.vanniktech.maven.publish.base:0.29.0"
 git-publish = "org.ajoberstar.git-publish:4.2.2"
@@ -12,6 +14,6 @@ pages = "com.hanggrian.pages:0.1"
 
 [libraries]
 # main
-kotlinx-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 # test
 truth = "com.google.truth:truth:1.4.4"
