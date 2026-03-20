@@ -2,7 +2,6 @@ package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.ajalt.mordant.rendering.TextStyle
 import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.disableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.enableMouseTracking
@@ -44,7 +43,7 @@ class MultiSelectionList(
                 }
 
             if (isCursorHighlighted) {
-                lines.add(terminal.render(TextColors.yellow("$prefix ${TextColors.yellow(item)}")))
+                lines.add(terminal.render(TextColors.yellow("$prefix $item")))
             } else {
                 lines.add("$prefix $item")
             }

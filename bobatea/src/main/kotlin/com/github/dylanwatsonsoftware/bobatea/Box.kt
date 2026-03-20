@@ -2,11 +2,14 @@ package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.ajalt.mordant.rendering.BorderType
 import com.github.ajalt.mordant.rendering.TextStyle
-import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.widgets.Panel
 import com.github.ajalt.mordant.widgets.Text
 import com.github.ajalt.mordant.widgets.withPadding
 
+/**
+ * Styling options for components.
+ * [SINGLE] maps to [BorderType.SQUARE] (single-line square border).
+ */
 enum class BorderStyle(val borderType: BorderType) {
     SINGLE(BorderType.SQUARE),
     DOUBLE(BorderType.DOUBLE),

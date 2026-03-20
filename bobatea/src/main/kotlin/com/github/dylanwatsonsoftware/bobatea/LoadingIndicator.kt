@@ -2,7 +2,6 @@ package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.ajalt.mordant.rendering.TextStyle
 import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.terminal.Terminal
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +32,10 @@ class LoadingIndicator(
         }
     }
 
+    /**
+     * Documentation: rendering is handled via show() during the loading process.
+     * This component manages its own animation output stream.
+     */
     override fun render(): String = ""
 
     fun <R> runLoading(message: String = "", loaderStyle: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
@@ -51,14 +54,17 @@ class LoadingIndicator(
     suspend fun show(message: String, loaderStyle: LoaderStyle) {
         val charSequence = loaderStyle.pattern.asInfiniteSequence()
         val pen = createPen(loaderStyle.color)
-        val terminal = Boba.terminal
+
+        val needsBox = borderStyle != BorderStyle.NONE || padding > 0 || margin > 0
 
         for (char in charSequence) {
             val loadingLine = "${pen(char.toString())} $message"
-            if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                val output = Box(loadingLine, padding, margin, borderStyle, style).render()
+            if (needsBox) {
+                // Optimally we would reuse the box if the content length is constant,
+                // but since the spinner character changes, we render it each frame.
+                val box = Box(loadingLine, padding, margin, borderStyle, style)
                 Boba.clear()
-                out.print(output)
+                out.print(box.render())
             } else {
                 out.print("\r$loadingLine")
             }
@@ -143,9 +149,9 @@ fun colour(txt: String, with: TerminalColors): String {
         TerminalColors.PURPLE -> TextColors.magenta
         TerminalColors.CYAN -> TextColors.cyan
         TerminalColors.WHITE -> TextColors.white
-        else -> null
+        TerminalColors.RESET -> TextColors.gray // fallback
     }
-    return if (mordantColor != null) Boba.terminal.render(mordantColor(txt)) else txt
+    return Boba.terminal.render(mordantColor(txt))
 }
 
 fun createPen(penColor: TerminalColors?): (String) -> String = { if (penColor != null) colour(it, with = penColor) else it }

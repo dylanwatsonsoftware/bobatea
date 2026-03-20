@@ -11,7 +11,7 @@ import java.io.IOException
 
 class Boba {
     companion object {
-        val terminal = Terminal()
+        var terminal = Terminal()
 
         fun selectFromList(
             question: String,
@@ -66,10 +66,16 @@ class Boba {
         fun clear() {
             terminal.cursor.move {
                 clearScreen()
+                // Move cursor to top-left to be safe
+                val os = System.getProperty("os.name").lowercase()
+                if (os.contains("win")) {
+                    // cls is handled by ProcessBuilder if needed, but Mordant should handle it.
+                    // Fallback for Windows if clearScreen is not enough
+                } else {
+                    print("\u001b[H\u001b[2J")
+                }
             }
-            // Sometimes Mordant's clearScreen is not enough on all OSs for TUI.
-            // But let's try to stick to it.
-            ProcessBuilder("clear").inheritIO().start().waitFor()
+            System.`out`.flush()
         }
 
         fun getChar(): Int {
@@ -146,15 +152,16 @@ class Boba {
 
         @Throws(IOException::class, InterruptedException::class)
         private fun exec(cmd: Array<String>): String {
+            val process = ProcessBuilder(*cmd)
+                .redirectErrorStream(true)
+                .start()
+
             val bout = ByteArrayOutputStream()
-            val p = Runtime.getRuntime().exec(cmd)
-            var c: Int
-            var `in` = p.inputStream
-            while ((`in`.read().also { c = it }) != -1) bout.write(c)
-            `in` = p.errorStream
-            while ((`in`.read().also { c = it }) != -1) bout.write(c)
-            p.waitFor()
-            return String(bout.toByteArray())
+            process.inputStream.use { input ->
+                input.copyTo(bout)
+            }
+            process.waitFor()
+            return bout.toString()
         }
     }
 }

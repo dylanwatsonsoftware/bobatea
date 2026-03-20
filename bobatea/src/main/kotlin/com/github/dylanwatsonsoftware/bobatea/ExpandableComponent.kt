@@ -65,7 +65,10 @@ class ExpandableComponent(
                         }
                     }
                     is BobaEvent.Mouse -> {
-                        val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
+                        val iconWidth = 3 // " ▶ " or " ▼ "
+                        val titleTextWidth = title.length
+
+                        val currentlyHovered = event.y == titleLine + 1 && event.x <= titleTextWidth + iconWidth + 1
                         if (currentlyHovered != isHovered) {
                             isHovered = currentlyHovered
                             printExpandable()
