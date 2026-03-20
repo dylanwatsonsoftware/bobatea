@@ -107,7 +107,6 @@ class Box(
                 }
             }
         } else {
-        } else {
             rendered
         }
     }
