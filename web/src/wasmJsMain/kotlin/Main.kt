@@ -1,8 +1,10 @@
 import com.github.dylanwatsonsoftware.bobatea.BorderStyle
 import com.github.dylanwatsonsoftware.bobatea.BobaEvent
 import com.github.dylanwatsonsoftware.bobatea.Box
+import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.BLUE
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.CYAN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
+import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.ExpandableComponent
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes
@@ -19,35 +21,60 @@ fun main() {
     MainScope().launch {
         val terminal = WasmTerminal()
 
-        LoadingIndicator.runLoading("Loading yo!", LoaderStyle.SMALL_GREEN, terminal) {
-            delay(3000)
-        }
-
-        terminal.write(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, color = CYAN).render() + "\n")
+        // 1. Welcome
+        terminal.write(Box("Welcome to Boba Tea Live Demo!", borderStyle = BorderStyle.ROUNDED, color = CYAN, padding = 1).render() + "\n")
         delay(2000)
 
+        // 2. Loading
+        terminal.write("${color("Step 1: Loading Indicators", GREEN)}\n")
+        LoadingIndicator.runLoading("Processing your request...", LoaderStyle.SMALL_GREEN, terminal) {
+            delay(3000)
+        }
+        terminal.write("\n")
+        delay(1500)
+
+        // 3. Expandable
+        terminal.write("${color("Step 2: Interactive Components", BLUE)}\n")
+        terminal.write("Try expanding the section below (Click or Space/Enter)\n")
         ExpandableComponent(
-            title = "Click me to see something cool!",
+            title = "Click me to see a secret!",
             content = Box(
-                "You expanded the section!\nThis is a box inside an expandable component.",
+                "Surprise! You found the hidden box.\nBoba Tea makes it easy to create complex TUI layouts.",
                 borderStyle = BorderStyle.DOUBLE,
-                color = GREEN
+                color = GREEN,
+                padding = 1
             ).render()
         ).interact(terminal)
+        terminal.write("\n")
+        delay(1500)
 
+        // 4. Coordinates
+        terminal.write("${color("Step 3: Custom Navigation", YELLOW)}\n")
+        terminal.write("Use WASD or Arrows to move the 'X' and press Enter to confirm.\n")
+        delay(1000)
         coordinates(terminal)
+        terminal.write("\n")
+        delay(1500)
 
+        // 5. Selection
+        terminal.write("${color("Step 4: Selection Lists", CYAN)}\n")
         val selection = SelectionList(
-            question = "What's your favourite number?",
-            options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"),
+            question = "What's your favourite Boba flavor?",
+            options = listOf("Milk Tea", "Taro", "Matcha", "Fruit Tea", "Brown Sugar"),
         ).interact(terminal)
-        terminal.write("You selected: $selection\n")
+        terminal.write("Excellent choice: $selection!\n")
+        delay(1500)
 
+        // 6. Multi-Selection
+        terminal.write("${color("Step 5: Multi-Selection", BLUE)}\n")
         val multiSelections = MultiSelectionList(
-            question = "What are all your favourite numbers?",
-            options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"),
+            question = "Select your favourite toppings (Space to toggle, Enter to confirm):",
+            options = listOf("Pearls", "Grass Jelly", "Pudding", "Aloe Vera", "Red Bean"),
         ).interact(terminal)
-        terminal.write("You selected: $multiSelections\n")
+        terminal.write("You selected: ${multiSelections.joinToString(", ")}\n")
+        delay(2000)
+
+        terminal.write("\n" + color("Demo Complete! Scroll down to see more examples.", GREEN) + "\n")
     }
 }
 
@@ -59,7 +86,7 @@ private suspend fun coordinates(terminal: WasmTerminal) {
                 if (row == highlightRow && col == highlightCol) {
                     sb.append(" X ")
                 } else {
-                    sb.append("   ")
+                    sb.append(" . ")
                 }
             }
             sb.append("\n")
@@ -69,8 +96,9 @@ private suspend fun coordinates(terminal: WasmTerminal) {
 
     fun render(x: Int, y: Int) {
         terminal.clear()
-        terminal.write("$x, $y\n")
-        terminal.write(printGridWithHighlight(10, 10, y, x))
+        terminal.write("${color("Step 3: Custom Navigation", YELLOW)}\n")
+        terminal.write("Position: $x, $y\n")
+        terminal.write(printGridWithHighlight(8, 8, y, x))
         terminal.write("Use ${color("UP/DOWN/LEFT/RIGHT", GREEN)} or ${color("WASD", GREEN)} to move\n")
         terminal.write("${color("SPACE/ENTER", GREEN)} to confirm\n")
     }
@@ -84,11 +112,16 @@ private suspend fun coordinates(terminal: WasmTerminal) {
         val event = terminal.readEvent()
         if (event is BobaEvent.Key) {
             when {
-                KeyCodes.isDown(event.code) -> render(x, ++y)
-                KeyCodes.isUp(event.code) -> render(x, --y)
-                KeyCodes.isLeft(event.code) -> render(--x, y)
-                KeyCodes.isRight(event.code) -> render(++x, y)
-                event.code == KeyCodes.ENTER.key || event.code == KeyCodes.SPACE.key -> return
+                KeyCodes.isDown(event.code) -> if (y < 7) render(x, ++y)
+                KeyCodes.isUp(event.code) -> if (y > 0) render(x, --y)
+                KeyCodes.isLeft(event.code) -> if (x > 0) render(--x, y)
+                KeyCodes.isRight(event.code) -> if (x < 7) render(++x, y)
+                event.code == KeyCodes.ENTER.key || event.code == KeyCodes.SPACE.key -> {
+                    terminal.clear()
+                    terminal.write("${color("Step 3: Custom Navigation", YELLOW)}\n")
+                    terminal.write("Confirmed position: $x, $y\n")
+                    return
+                }
             }
         }
     }
