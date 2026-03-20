@@ -7,16 +7,14 @@ import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.ExpandableComponent
 import com.github.dylanwatsonsoftware.bobatea.JvmTerminal
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
+import com.github.dylanwatsonsoftware.bobatea.KeyCodes
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.LEFT
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.RIGHT
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
 import com.github.dylanwatsonsoftware.bobatea.LoaderStyle.SMALL_GREEN
 import com.github.dylanwatsonsoftware.bobatea.LoadingIndicator
 import com.github.dylanwatsonsoftware.bobatea.MultiSelectionList
 import com.github.dylanwatsonsoftware.bobatea.SelectionList
+import com.github.dylanwatsonsoftware.bobatea.BobaEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -83,6 +81,7 @@ class App {
                 terminal.clear()
                 terminal.write("$x, $y\n")
                 terminal.write(printGridWithHighlight(10, 10, y, x))
+                terminal.write("Use ${color("UP/DOWN/LEFT/RIGHT", GREEN)} or ${color("WASD", GREEN)} to move\n")
                 terminal.write("${color("SPACE/ENTER", GREEN)} to confirm\n")
             }
 
@@ -92,12 +91,13 @@ class App {
             render(x, y)
 
             while (true) {
-                when (terminal.getChar()) {
-                    DOWN.key -> render(x, ++y)
-                    UP.key -> render(x, --y)
-                    LEFT.key -> render(--x, y)
-                    RIGHT.key -> render(++x, y)
-                    ENTER.key, SPACE.key -> return
+                val event = terminal.readEvent()
+                if (event is BobaEvent.Key) {
+                    if (KeyCodes.isDown(event.code)) render(x, ++y)
+                    else if (KeyCodes.isUp(event.code)) render(x, --y)
+                    else if (KeyCodes.isLeft(event.code)) render(--x, y)
+                    else if (KeyCodes.isRight(event.code)) render(++x, y)
+                    else if (event.code == ENTER.key || event.code == SPACE.key) return
                 }
             }
         }

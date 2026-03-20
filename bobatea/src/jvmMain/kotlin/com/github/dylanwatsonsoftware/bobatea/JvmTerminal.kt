@@ -72,7 +72,15 @@ class JvmTerminal : Terminal {
     private fun readEventBlocking(): BobaEvent {
         val firstChar = getChar()
         if (firstChar == 27) { // ESC
-            if (System.`in`.available() > 0) {
+            // Check for potential sequence after ESC
+            var available = System.`in`.available()
+            if (available == 0) {
+                // Short sleep to allow potential subsequent characters of an escape sequence to arrive
+                Thread.sleep(50)
+                available = System.`in`.available()
+            }
+
+            if (available > 0) {
                 val secondChar = System.`in`.read()
                 if (secondChar == '['.code) {
                     val seq = StringBuilder()

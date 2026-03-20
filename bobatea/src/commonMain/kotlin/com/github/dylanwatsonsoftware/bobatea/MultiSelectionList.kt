@@ -3,10 +3,8 @@ package com.github.dylanwatsonsoftware.bobatea
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
 
 class MultiSelectionList(
     val question: String,
@@ -44,7 +42,7 @@ class MultiSelectionList(
             }
         }
         content.append("\n")
-        content.append("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.\n")
+        content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
         content.append("Press ${color("SPACE", GREEN)} to toggle selection\n")
         content.append("${color("ENTER", GREEN)} to confirm")
 
@@ -66,20 +64,20 @@ class MultiSelectionList(
             while (true) {
                 when (val event = terminal.readEvent()) {
                     is BobaEvent.Key -> {
-                        when (event.code) {
-                            UP.key -> {
+                        when {
+                            KeyCodes.isUp(event.code) -> {
                                 currentIndex = (currentIndex - 1 + options.size) % options.size
                                 printList()
                             }
-                            DOWN.key -> {
+                            KeyCodes.isDown(event.code) -> {
                                 currentIndex = (currentIndex + 1) % options.size
                                 printList()
                             }
-                            SPACE.key -> {
+                            event.code == SPACE.key -> {
                                 toggle(currentIndex)
                                 printList()
                             }
-                            ENTER.key -> {
+                            event.code == ENTER.key -> {
                                 currentIndex = -1
                                 printList()
                                 return selected
