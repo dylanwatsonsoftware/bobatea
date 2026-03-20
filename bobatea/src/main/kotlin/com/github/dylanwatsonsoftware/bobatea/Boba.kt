@@ -14,144 +14,37 @@ import java.util.TreeSet
 class Boba {
     companion object {
 
-        fun selectFromList(question: String, options: List<String>): String {
-            var currentIndex = 0
-
-            fun printList() {
-                clear()
-                println(color(question, GREEN))
-                options.forEachIndexed { index, item ->
-                    if (index == currentIndex) {
-                        println(color("❯ $item", YELLOW))
-                    } else {
-                        println("  $item")
-                    }
-                }
-                println()
-                println("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.")
-                println("${color("SPACE/ENTER", GREEN)} to confirm")
-            }
-
-            fun moveUp() {
-                currentIndex = (currentIndex - 1 + options.size) % options.size
-            }
-
-            fun moveDown() {
-                currentIndex = (currentIndex + 1) % options.size
-            }
-
-            fun deselect() {
-                currentIndex = -1
-            }
-
-            printList()
-
-            while (true) {
-                when (getChar()) {
-                    UP.key -> {
-                        moveUp()
-                        printList()
-                    }
-
-                    DOWN.key -> {
-                        moveDown()
-                        printList()
-                    }
-
-                    SPACE.key, ENTER.key -> {
-                        val selected = options[currentIndex]
-                        deselect()
-                        printList()
-                        return selected
-                    }
-                }
-            }
+        fun selectFromList(
+            question: String,
+            options: List<String>,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ): String {
+            return SelectionList(question, options, padding, margin, borderStyle, color).interact()
         }
 
-        fun selectMultipleFromList(question: String, options: List<String>): MutableSet<String> {
-            val selected = TreeSet<String>()
+        fun expandable(
+            title: String,
+            content: String,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ) {
+            ExpandableComponent(title, content, padding, margin, borderStyle, color).interact()
+        }
 
-            var currentIndex = 0
-
-            fun printList() {
-                clear()
-                println(color(question, GREEN))
-                options.forEachIndexed { index, item ->
-                    val isSelected = selected.contains(item)
-                    val isCursorHighlighted = index == currentIndex
-
-                    val prefix =
-                        if (isSelected && isCursorHighlighted) {
-                            "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
-                        } else if (isSelected) {
-                            color(
-                                " ✔ ",
-                                GREEN,
-                            )
-                        } else if (isCursorHighlighted) {
-                            "[ ]"
-                        } else {
-                            "   "
-                        }
-
-                    if (isCursorHighlighted) {
-                        println(color("$prefix ${color(item, YELLOW)}", YELLOW))
-                    } else {
-                        println("$prefix $item")
-                    }
-                }
-                println()
-                println("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.")
-                println("Press ${color("SPACE", GREEN)} to toggle selection")
-                println("${color("ENTER", GREEN)} to confirm")
-            }
-
-            fun moveUp() {
-                currentIndex = (currentIndex - 1 + options.size) % options.size
-            }
-
-            fun moveDown() {
-                currentIndex = (currentIndex + 1) % options.size
-            }
-
-            fun toggle(index: Int) {
-                if (selected.contains(options[index])) {
-                    selected.remove(options[index])
-                } else {
-                    selected.add(options[index])
-                }
-            }
-
-            fun deselectIndex() {
-                currentIndex = -1
-            }
-
-            printList()
-
-            while (true) {
-                when (getChar()) {
-                    UP.key -> {
-                        moveUp()
-                        printList()
-                    }
-
-                    DOWN.key -> {
-                        moveDown()
-                        printList()
-                    }
-
-                    SPACE.key -> {
-                        toggle(currentIndex)
-                        printList()
-                    }
-
-                    ENTER.key -> {
-                        deselectIndex()
-                        printList()
-                        return selected
-                    }
-                }
-            }
+        fun selectMultipleFromList(
+            question: String,
+            options: List<String>,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null
+        ): MutableSet<String> {
+            return MultiSelectionList(question, options, padding, margin, borderStyle, color).interact()
         }
 
         /**
@@ -180,10 +73,62 @@ class Boba {
 
         fun getChar(): Int {
             while (true) {
-                if (System.`in`.available() != 0) {
-                    return System.`in`.read()
-                }
+                val read = System.`in`.read()
+                if (read != -1) return read
             }
+        }
+
+        fun readEvent(): BobaEvent {
+            val firstChar = getChar()
+            if (firstChar == 27) { // ESC
+                if (System.`in`.available() > 0) {
+                    val secondChar = System.`in`.read()
+                    if (secondChar == '['.toInt()) {
+                        val seq = StringBuilder()
+                        var nextChar: Int
+                        while (true) {
+                            nextChar = System.`in`.read()
+                            seq.append(nextChar.toChar())
+                            if (nextChar in 64..126) break
+                        }
+                        val s = seq.toString()
+                        if (s.startsWith("<")) { // SGR Mouse Protocol
+                            val parts = s.substring(1, s.length - 1).split(";")
+                            val buttonInfo = parts[0].toInt()
+                            val x = parts[1].toInt()
+                            val y = parts[2].toInt()
+                            val action = when {
+                                (buttonInfo and 32) != 0 -> MouseAction.MOVE
+                                s.endsWith("M") -> MouseAction.PRESS
+                                else -> MouseAction.RELEASE
+                            }
+                            return BobaEvent.Mouse(x, y, buttonInfo, action)
+                        } else if (s == "A") return BobaEvent.Key(UP.key)
+                        else if (s == "B") return BobaEvent.Key(DOWN.key)
+                        else if (s == "C") return BobaEvent.Key(KeyCodes.RIGHT.key)
+                        else if (s == "D") return BobaEvent.Key(KeyCodes.LEFT.key)
+                    }
+                }
+                return BobaEvent.Key(firstChar)
+            }
+            return BobaEvent.Key(firstChar)
+        }
+
+        fun enableMouseTracking(allMotion: Boolean = false) {
+            if (allMotion) {
+                print("\u001b[?1003h") // Enable all motion tracking
+            } else {
+                print("\u001b[?1000h") // Enable basic mouse tracking
+            }
+            print("\u001b[?1006h") // Enable SGR extended mode
+            System.out.flush()
+        }
+
+        fun disableMouseTracking() {
+            print("\u001b[?1006l")
+            print("\u001b[?1003l")
+            print("\u001b[?1000l")
+            System.out.flush()
         }
 
         @Throws(IOException::class, InterruptedException::class)

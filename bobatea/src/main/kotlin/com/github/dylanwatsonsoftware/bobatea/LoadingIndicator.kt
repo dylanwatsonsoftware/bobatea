@@ -10,12 +10,27 @@ import kotlinx.coroutines.runBlocking
 
 class LoadingIndicator(
     private val out: PrintWriter = PrintWriter(OutputStreamWriter(System.out)),
-) {
+    override var padding: Int = 0,
+    override var margin: Int = 0,
+    override var borderStyle: BorderStyle = BorderStyle.NONE,
+    override var color: String? = null
+) : BobaComponent(padding, margin, borderStyle, color) {
     companion object {
-        fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
-            return LoadingIndicator().runLoading(message, style, callback)
+        fun <R> runLoading(
+            message: String = "",
+            style: LoaderStyle = LoaderStyle.DEFAULT,
+            padding: Int = 0,
+            margin: Int = 0,
+            borderStyle: BorderStyle = BorderStyle.NONE,
+            color: String? = null,
+            callback: () -> R
+        ): R {
+            return LoadingIndicator(padding = padding, margin = margin, borderStyle = borderStyle, color = color)
+                .runLoading(message, style, callback)
         }
     }
+
+    override fun render(): String = "" // LoadingIndicator uses direct output stream
 
     fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
         var result: R
@@ -33,8 +48,24 @@ class LoadingIndicator(
     suspend fun show(message: String, style: LoaderStyle) {
         val charSequence = style.pattern.asInfiniteSequence()
         val pen = createPen(style.color)
+
+        val marginStr = " ".repeat(margin)
+        val paddingStr = " ".repeat(padding)
+
         for (char in charSequence) {
-            out.print("\r${pen(char.toString())} $message")
+            val loadingLine = "${pen(char.toString())} $message"
+            val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
+                 Box(loadingLine, padding, margin, borderStyle, color).render()
+            } else {
+                 "\r$loadingLine"
+            }
+
+            if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
+                Boba.clear()
+                out.print(output)
+            } else {
+                out.print(output)
+            }
             out.flush()
             delay(200)
         }
@@ -144,4 +175,3 @@ fun bold(text: String): String = "${Formatting.BOLD.value}${text}${TerminalColor
 fun underline(text: String): String = "${Formatting.UNDERLINE.value}${text}${TerminalColors.RESET.value}"
 
 fun createPen(penColor: TerminalColors?): (String) -> String = { if (penColor != null) colour(it, with = penColor) else it }
-
