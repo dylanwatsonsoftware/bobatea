@@ -3,10 +3,8 @@ package com.github.dylanwatsonsoftware.bobatea
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
-import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
 
 class SelectionList(
     val question: String,
@@ -29,7 +27,7 @@ class SelectionList(
             }
         }
         content.append("\n")
-        content.append("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.\n")
+        content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
         content.append("${color("SPACE/ENTER", GREEN)} to confirm")
 
         return wrapInBox(content.toString().trimEnd('\n'))
@@ -50,16 +48,16 @@ class SelectionList(
             while (true) {
                 when (val event = terminal.readEvent()) {
                     is BobaEvent.Key -> {
-                        when (event.code) {
-                            UP.key -> {
+                        when {
+                            KeyCodes.isUp(event.code) -> {
                                 currentIndex = (currentIndex - 1 + options.size) % options.size
                                 printList()
                             }
-                            DOWN.key -> {
+                            KeyCodes.isDown(event.code) -> {
                                 currentIndex = (currentIndex + 1) % options.size
                                 printList()
                             }
-                            SPACE.key, ENTER.key -> {
+                            event.code == SPACE.key || event.code == ENTER.key -> {
                                 val selected = options[currentIndex]
                                 currentIndex = -1
                                 printList()

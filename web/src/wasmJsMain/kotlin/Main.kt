@@ -71,6 +71,7 @@ private suspend fun coordinates(terminal: WasmTerminal) {
         terminal.clear()
         terminal.write("$x, $y\n")
         terminal.write(printGridWithHighlight(10, 10, y, x))
+        terminal.write("Use ${color("UP/DOWN/LEFT/RIGHT", GREEN)} or ${color("WASD", GREEN)} to move\n")
         terminal.write("${color("SPACE/ENTER", GREEN)} to confirm\n")
     }
 
@@ -80,12 +81,15 @@ private suspend fun coordinates(terminal: WasmTerminal) {
     render(x, y)
 
     while (true) {
-        when ((terminal.readEvent() as? BobaEvent.Key)?.code) {
-            KeyCodes.DOWN.key -> render(x, ++y)
-            KeyCodes.UP.key -> render(x, --y)
-            KeyCodes.LEFT.key -> render(--x, y)
-            KeyCodes.RIGHT.key -> render(++x, y)
-            KeyCodes.ENTER.key, KeyCodes.SPACE.key -> return
+        val event = terminal.readEvent()
+        if (event is BobaEvent.Key) {
+            when {
+                KeyCodes.isDown(event.code) -> render(x, ++y)
+                KeyCodes.isUp(event.code) -> render(x, --y)
+                KeyCodes.isLeft(event.code) -> render(--x, y)
+                KeyCodes.isRight(event.code) -> render(++x, y)
+                event.code == KeyCodes.ENTER.key || event.code == KeyCodes.SPACE.key -> return
+            }
         }
     }
 }
