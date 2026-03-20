@@ -29,13 +29,13 @@ class ExpandableComponent(
 
         result.append(coloredTitle).append("\n")
         if (expanded) {
-            result.append(content).append("\n")
+            result.append(content)
         }
         result.append("\n")
         result.append("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle\n")
         result.append("Press ${color("Q", GREEN)} to exit")
 
-        return wrapInBox(result.toString().trimEnd('\n'))
+        return result.toString().trimEnd('\n')
     }
 
     suspend fun interact(terminal: Terminal) {
@@ -62,7 +62,7 @@ class ExpandableComponent(
                         }
                     }
                     is BobaEvent.Mouse -> {
-                        val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
+                        val currentlyHovered = event.y == titleLine + 1 && event.x >= margin + 1 && event.x <= margin + title.length + 6
                         if (currentlyHovered != isHovered) {
                             isHovered = currentlyHovered
                             printExpandable()

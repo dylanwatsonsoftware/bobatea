@@ -26,14 +26,16 @@ fun main() {
         terminal.write(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, color = CYAN).render() + "\n")
         delay(2000)
 
-        ExpandableComponent(
+        val expandable = ExpandableComponent(
             title = "Click me to see something cool!",
             content = Box(
                 "You expanded the section!\nThis is a box inside an expandable component.",
                 borderStyle = BorderStyle.DOUBLE,
                 color = GREEN
             ).render()
-        ).interact(terminal)
+        )
+        expandable.expanded = true
+        expandable.interact(terminal)
 
         coordinates(terminal)
 
