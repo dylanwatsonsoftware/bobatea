@@ -22,10 +22,11 @@ class Box(
     override var color: String? = null
 ) : BobaComponent(padding, margin, borderStyle, color) {
     companion object {
-        private val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]")
+        private val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]|\u001b\\][0-9;]*\u0007")
     }
 
     private fun visibleLength(s: String): Int {
+        if (s.isEmpty()) return 0
         return s.replace(ANSI_REGEX, "").length
     }
 
@@ -63,7 +64,10 @@ class Box(
             if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
             result.append(" ".repeat(padding))
             result.append(line)
-            result.append(" ".repeat(contentWidth - visibleLength(line)))
+            val paddingNeeded = contentWidth - visibleLength(line)
+            if (paddingNeeded > 0) {
+                result.append(" ".repeat(paddingNeeded))
+            }
             result.append(" ".repeat(padding))
             if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
             result.append("\n")
@@ -91,7 +95,13 @@ class Box(
         repeat(margin) { result.append("\n") }
 
         val rendered = result.toString().trimEnd('\n')
-        return if (color != null) ConsoleColors.color(rendered, color!!) else rendered
+        return if (color != null) {
+            rendered.lines().joinToString("\n") { line ->
+                if (line.isEmpty()) "" else ConsoleColors.color(line, color!!)
+            }
+        } else {
+            rendered
+        }
     }
 
     override fun toString(): String = render()

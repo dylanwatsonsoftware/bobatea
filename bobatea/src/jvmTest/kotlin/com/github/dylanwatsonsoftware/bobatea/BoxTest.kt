@@ -80,4 +80,40 @@ class BoxTest {
         // Bottom border: └ + 12 * ─ + ┘ = 14 chars
         assertThat(lines[2]).isEqualTo("└────────────┘")
     }
+
+    @Test
+    fun `test color is applied to each line individually`() {
+        val color = ConsoleColors.BLUE
+        val box = Box("Test", padding = 0, margin = 0, borderStyle = BorderStyle.SINGLE, color = color)
+        val rendered = box.render()
+        val lines = rendered.lines()
+
+        assertThat(lines).hasSize(3)
+        lines.forEach { line ->
+            assertThat(line).startsWith(color)
+            assertThat(line).endsWith(ConsoleColors.RESET)
+        }
+    }
+
+    @Test
+    fun `test nested boxes maintain alignment`() {
+        val innerBox = Box("Inner", padding = 0, margin = 0, borderStyle = BorderStyle.SINGLE, color = ConsoleColors.GREEN)
+        val outerBox = Box(innerBox.render(), padding = 0, margin = 0, borderStyle = BorderStyle.SINGLE, color = ConsoleColors.BLUE)
+
+        val rendered = outerBox.render()
+        val lines = rendered.lines()
+
+        // "Inner" is 5 chars, box adds 2 (borders), total 7
+        // Outer box adds 2 more (borders), total 9
+        assertThat(lines).hasSize(5)
+        lines.forEach { line ->
+            // Each line should be colored BLUE
+            assertThat(line).startsWith(ConsoleColors.BLUE)
+            assertThat(line).endsWith(ConsoleColors.RESET)
+
+            // Stripping all ANSI codes should give a line of length 9
+            val stripped = line.replace(Regex("\u001b\\[[0-9;?]*[a-zA-Z]|\u001b\\][0-9;]*\u0007"), "")
+            assertThat(stripped.length).isEqualTo(9)
+        }
+    }
 }

@@ -14,7 +14,7 @@ fun pushTerminalInput(data: String) {
 private external fun jsWrite(data: String)
 
 class WasmTerminal : Terminal {
-    override fun write(text: String) = jsWrite(text)
+    override fun write(text: String) = jsWrite(text.replace("\r\n", "\n").replace("\n", "\r\n"))
 
     override fun clear() {
         jsWrite("\u001b[2J\u001b[H")
