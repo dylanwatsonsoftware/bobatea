@@ -21,9 +21,17 @@ class Box(
     override var borderStyle: BorderStyle = BorderStyle.SINGLE,
     override var color: String? = null
 ) : BobaComponent(padding, margin, borderStyle, color) {
+    companion object {
+        private val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]")
+    }
+
+    private fun visibleLength(s: String): Int {
+        return s.replace(ANSI_REGEX, "").length
+    }
+
     override fun render(): String {
         val lines = content.lines()
-        val contentWidth = lines.maxOfOrNull { it.length } ?: 0
+        val contentWidth = lines.maxOfOrNull { visibleLength(it) } ?: 0
         val innerWidth = contentWidth + padding * 2
 
         val result = StringBuilder()
@@ -55,7 +63,7 @@ class Box(
             if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
             result.append(" ".repeat(padding))
             result.append(line)
-            result.append(" ".repeat(contentWidth - line.length))
+            result.append(" ".repeat(contentWidth - visibleLength(line)))
             result.append(" ".repeat(padding))
             if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
             result.append("\n")

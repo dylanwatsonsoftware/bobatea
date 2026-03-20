@@ -11,6 +11,10 @@ local.properties
 *.iml
 .idea/
 out/
+.kotlin/
+
+# Logs
+*.log
 
 # VSCode
 bin/

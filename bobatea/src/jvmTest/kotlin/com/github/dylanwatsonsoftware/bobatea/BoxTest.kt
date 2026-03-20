@@ -62,4 +62,22 @@ class BoxTest {
         """.trimIndent()
         assertThat(box.render()).isEqualTo(expected)
     }
+
+    @Test
+    fun `test box with colored content maintains alignment`() {
+        val coloredContent = "${ConsoleColors.RED}Red${ConsoleColors.RESET} and ${ConsoleColors.BLUE}Blue${ConsoleColors.RESET}"
+        val box = Box(coloredContent, padding = 0, margin = 0, borderStyle = BorderStyle.SINGLE)
+
+        // "Red and Blue" has visible length of 12
+        // ANSI codes add length but should be ignored for alignment
+        val rendered = box.render()
+        val lines = rendered.lines()
+
+        // Top border: ┌ + 12 * ─ + ┐ = 14 chars
+        assertThat(lines[0]).isEqualTo("┌────────────┐")
+        // Content line: │ + coloredContent + │
+        assertThat(lines[1]).isEqualTo("│$coloredContent│")
+        // Bottom border: └ + 12 * ─ + ┘ = 14 chars
+        assertThat(lines[2]).isEqualTo("└────────────┘")
+    }
 }
