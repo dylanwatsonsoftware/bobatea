@@ -96,9 +96,17 @@ class Box(
 
         val rendered = result.toString().trimEnd('\n')
         return if (color != null) {
+            val lineColor = color!!
             rendered.lines().joinToString("\n") { line ->
-                if (line.isEmpty()) "" else ConsoleColors.color(line, color!!)
+                if (line.isEmpty()) "" else {
+                    val restored = line.replace(
+                        ConsoleColors.RESET,
+                        ConsoleColors.RESET + lineColor
+                    )
+                    ConsoleColors.color(restored, lineColor)
+                }
             }
+        } else {
         } else {
             rendered
         }
