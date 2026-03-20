@@ -34,18 +34,21 @@
         window.addEventListener('resize', () => fitAddon.fit());
         window._bobaterm = term;
 
-        // Wire input: buffer keystrokes until Kotlin WASM is ready
+        // Buffer keystrokes until Kotlin WASM exports are ready
         const inputBuffer = [];
         term.onData(data => {
-            if (window.web && window.web.pushTerminalInput) {
-                while (inputBuffer.length > 0) window.web.pushTerminalInput(inputBuffer.shift());
-                window.web.pushTerminalInput(data);
-            } else {
-                inputBuffer.push(data);
-            }
+            if (window._bobaPush) window._bobaPush(data);
+            else inputBuffer.push(data);
         });
     </script>
 
     <script src="./bobatea-web.js"></script>
+    <script>
+        // window.web is a Promise (webpack async module) — wait for WASM to fully load
+        Promise.resolve(window.web).then(exports => {
+            window._bobaPush = exports.pushTerminalInput;
+            while (inputBuffer.length > 0) window._bobaPush(inputBuffer.shift());
+        });
+    </script>
 </body>
 </html>
