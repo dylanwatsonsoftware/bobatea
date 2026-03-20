@@ -31,13 +31,13 @@ class Box(
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val lines = content.lines()
-        val contentWidth = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        val contentWidth = lines.maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0
         val contentHeight = lines.size
 
-        val resolvedWidth = resolveDimension(width, availableWidth)
-        val resolvedMaxWidth = resolveDimension(maxWidth, availableWidth)
-        val resolvedHeight = resolveDimension(height, availableHeight)
-        val resolvedMaxHeight = resolveDimension(maxHeight, availableHeight)
+        val resolvedWidth = BobaComponent.resolveDimension(width, availableWidth)
+        val resolvedMaxWidth = BobaComponent.resolveDimension(maxWidth, availableWidth)
+        val resolvedHeight = BobaComponent.resolveDimension(height, availableHeight)
+        val resolvedMaxHeight = BobaComponent.resolveDimension(maxHeight, availableHeight)
 
         val borderSize = if (borderStyle != BorderStyle.NONE) 2 else 0
         val horizontalTotal = padding * 2 + borderSize
@@ -83,7 +83,7 @@ class Box(
 
             if (i < lines.size) {
                 val line = lines[i]
-                val vLen = visibleLength(line)
+                val vLen = BobaComponent.visibleLength(line)
                 if (vLen <= innerWidth) {
                     result.append(line)
                     result.append(" ".repeat(innerWidth - vLen))
@@ -96,7 +96,7 @@ class Box(
                     var j = 0
                     while (j < line.length && currentVisible < innerWidth) {
                         if (line[j] == '\u001b') {
-                            val match = ANSI_REGEX.find(line, j)
+                            val match = BobaComponent.ANSI_REGEX.find(line, j)
                             if (match != null && match.range.first == j) {
                                 truncated.append(match.value)
                                 j = match.range.last + 1

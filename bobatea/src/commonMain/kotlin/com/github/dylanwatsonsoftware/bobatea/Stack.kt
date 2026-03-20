@@ -16,10 +16,10 @@ class Stack(
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
-        val resolvedWidth = resolveDimension(width, availableWidth)
-        val resolvedMaxWidth = resolveDimension(maxWidth, availableWidth)
-        val resolvedHeight = resolveDimension(height, availableHeight)
-        val resolvedMaxHeight = resolveDimension(maxHeight, availableHeight)
+        val resolvedWidth = BobaComponent.resolveDimension(width, availableWidth)
+        val resolvedMaxWidth = BobaComponent.resolveDimension(maxWidth, availableWidth)
+        val resolvedHeight = BobaComponent.resolveDimension(height, availableHeight)
+        val resolvedMaxHeight = BobaComponent.resolveDimension(maxHeight, availableHeight)
 
         val borderSize = if (borderStyle != BorderStyle.NONE) 2 else 0
         val horizontalTotal = padding * 2 + borderSize
@@ -40,7 +40,7 @@ class Stack(
         val renderedChildren = children.map { it.render(innerAvailableWidth, null) }
         val childrenLines = renderedChildren.flatMap { it.lines() }
 
-        val contentWidth = childrenLines.maxOfOrNull { visibleLength(it) } ?: 0
+        val contentWidth = childrenLines.maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0
         val contentHeight = childrenLines.size
 
         var finalWidth = resolvedWidth ?: (contentWidth + horizontalTotal)

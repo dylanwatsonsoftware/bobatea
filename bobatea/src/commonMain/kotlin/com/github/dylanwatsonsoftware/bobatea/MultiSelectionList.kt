@@ -48,7 +48,7 @@ class MultiSelectionList(
         content.append("\n")
         content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
         content.append("Press ${color("SPACE", GREEN)} to toggle selection\n")
-        content.append("${color("ENTER", GREEN)} to confirm")
+        content.append("${color("ENTER", GREEN)} or ${color("Q", GREEN)} to confirm")
 
         return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
     }
@@ -81,7 +81,7 @@ class MultiSelectionList(
                                 toggle(currentIndex)
                                 printList()
                             }
-                            event.code == ENTER.key -> {
+                            event.code == ENTER.key || event.code == 'q'.code || event.code == 'Q'.code -> {
                                 currentIndex = -1
                                 printList()
                                 return selected

@@ -16,10 +16,10 @@ class Inline(
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
-        val resolvedWidth = resolveDimension(width, availableWidth)
-        val resolvedMaxWidth = resolveDimension(maxWidth, availableWidth)
-        val resolvedHeight = resolveDimension(height, availableHeight)
-        val resolvedMaxHeight = resolveDimension(maxHeight, availableHeight)
+        val resolvedWidth = BobaComponent.resolveDimension(width, availableWidth)
+        val resolvedMaxWidth = BobaComponent.resolveDimension(maxWidth, availableWidth)
+        val resolvedHeight = BobaComponent.resolveDimension(height, availableHeight)
+        val resolvedMaxHeight = BobaComponent.resolveDimension(maxHeight, availableHeight)
 
         val borderSize = if (borderStyle != BorderStyle.NONE) 2 else 0
         val horizontalTotal = padding * 2 + borderSize
@@ -46,14 +46,14 @@ class Inline(
             val combinedLine = StringBuilder()
             childrenAsLines.forEachIndexed { index, childLines ->
                 val line = if (i < childLines.size) childLines[i] else ""
-                val childWidth = childrenAsLines[index].maxOfOrNull { visibleLength(it) } ?: 0
+                val childWidth = childrenAsLines[index].maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0
                 combinedLine.append(line)
-                combinedLine.append(" ".repeat(max(0, childWidth - visibleLength(line))))
+                combinedLine.append(" ".repeat(max(0, childWidth - BobaComponent.visibleLength(line))))
             }
             combinedLines.add(combinedLine.toString())
         }
 
-        val contentWidth = combinedLines.maxOfOrNull { visibleLength(it) } ?: 0
+        val contentWidth = combinedLines.maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0
         val contentHeight = combinedLines.size
 
         var finalWidth = resolvedWidth ?: (contentWidth + horizontalTotal)
