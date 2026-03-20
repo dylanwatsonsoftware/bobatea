@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.mordant)
 
     testImplementation(kotlin("test-junit", libs.versions.kotlin.get()))
     testImplementation(libs.truth)

@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":$releaseArtifact"))
+    implementation(libs.mordant)
 }
 
 application {

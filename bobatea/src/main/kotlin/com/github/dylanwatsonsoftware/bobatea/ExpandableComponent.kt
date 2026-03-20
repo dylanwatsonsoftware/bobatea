@@ -1,11 +1,13 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.disableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.enableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.readEvent
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
+import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.terminal
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
 
@@ -15,8 +17,8 @@ class ExpandableComponent(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var style: TextStyle = TextStyle()
+) : BobaComponent(padding, margin, borderStyle, style) {
     var expanded = false
     var isHovered = false
 
@@ -25,16 +27,16 @@ class ExpandableComponent(
         val icon = if (expanded) "▼" else "▶"
         val text = " $icon $title "
 
-        val background = if (isHovered) ConsoleColors.CYAN_BACKGROUND else ConsoleColors.BLUE_BACKGROUND
-        val coloredTitle = color(text, background + ConsoleColors.WHITE_BOLD)
+        val background = if (isHovered) TextColors.cyan.bg else TextColors.blue.bg
+        val coloredTitleStyle = background + TextColors.white + TextStyles.bold
 
-        result.append(coloredTitle).append("\n")
+        result.append(terminal.render(coloredTitleStyle(text))).append("\n")
         if (expanded) {
             result.append(content).append("\n")
         }
         result.append("\n")
-        result.append("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle\n")
-        result.append("Press ${color("Q", GREEN)} to exit")
+        result.append(terminal.render(TextColors.green("Press SPACE/ENTER or CLICK to toggle"))).append("\n")
+        result.append(terminal.render(TextColors.green("Press Q to exit")))
 
         return wrapInBox(result.toString().trimEnd('\n'))
     }
@@ -63,8 +65,6 @@ class ExpandableComponent(
                         }
                     }
                     is BobaEvent.Mouse -> {
-                        // Offset by 1 for mouse vs 0-indexed string logic if needed,
-                        // but event.x is usually 1-indexed.
                         val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
                         if (currentlyHovered != isHovered) {
                             isHovered = currentlyHovered

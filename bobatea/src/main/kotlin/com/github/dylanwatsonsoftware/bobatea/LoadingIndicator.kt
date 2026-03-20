@@ -1,5 +1,8 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.terminal.Terminal
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import kotlinx.coroutines.Dispatchers
@@ -9,62 +12,55 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class LoadingIndicator(
-    private val out: PrintWriter = PrintWriter(OutputStreamWriter(System.out)),
+    private val out: PrintWriter = PrintWriter(OutputStreamWriter(System.`out`)),
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var style: TextStyle = TextStyle()
+) : BobaComponent(padding, margin, borderStyle, style) {
     companion object {
         fun <R> runLoading(
             message: String = "",
-            style: LoaderStyle = LoaderStyle.DEFAULT,
+            loaderStyle: LoaderStyle = LoaderStyle.DEFAULT,
             padding: Int = 0,
             margin: Int = 0,
             borderStyle: BorderStyle = BorderStyle.NONE,
-            color: String? = null,
+            style: TextStyle = TextStyle(),
             callback: () -> R
         ): R {
-            return LoadingIndicator(padding = padding, margin = margin, borderStyle = borderStyle, color = color)
-                .runLoading(message, style, callback)
+            return LoadingIndicator(padding = padding, margin = margin, borderStyle = borderStyle, style = style)
+                .runLoading(message, loaderStyle, callback)
         }
     }
 
-    override fun render(): String = "" // LoadingIndicator uses direct output stream
+    override fun render(): String = ""
 
-    fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
+    fun <R> runLoading(message: String = "", loaderStyle: LoaderStyle = LoaderStyle.DEFAULT, callback: () -> R): R {
         var result: R
         runBlocking {
-            val job = launch(Dispatchers.Default) { show(message, style) }
-            val messageEraser = message.map { " " }.joinToString("")
+            val job = launch(Dispatchers.Default) { show(message, loaderStyle) }
+            val messageEraser = " ".repeat(message.length + 10)
             result = callback()
             job.cancelAndJoin()
-            out.print("\r   ${messageEraser}\r")
+            out.print("\r$messageEraser\r")
             out.flush()
         }
         return result
     }
 
-    suspend fun show(message: String, style: LoaderStyle) {
-        val charSequence = style.pattern.asInfiniteSequence()
-        val pen = createPen(style.color)
-
-        val marginStr = " ".repeat(margin)
-        val paddingStr = " ".repeat(padding)
+    suspend fun show(message: String, loaderStyle: LoaderStyle) {
+        val charSequence = loaderStyle.pattern.asInfiniteSequence()
+        val pen = createPen(loaderStyle.color)
+        val terminal = Boba.terminal
 
         for (char in charSequence) {
             val loadingLine = "${pen(char.toString())} $message"
-            val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                 Box(loadingLine, padding, margin, borderStyle, color).render()
-            } else {
-                 "\r$loadingLine"
-            }
-
             if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
+                val output = Box(loadingLine, padding, margin, borderStyle, style).render()
                 Boba.clear()
                 out.print(output)
             } else {
-                out.print(output)
+                out.print("\r$loadingLine")
             }
             out.flush()
             delay(200)
@@ -137,41 +133,19 @@ enum class TerminalColors(val value: String) {
     WHITE("\u001B[37m"),
 }
 
-enum class Formatting(val value: String) {
-    BOLD("\u001B[1m"),
-    UNDERLINE("\u001B[4m"),
+fun colour(txt: String, with: TerminalColors): String {
+    val mordantColor = when(with) {
+        TerminalColors.BLACK -> TextColors.black
+        TerminalColors.RED -> TextColors.red
+        TerminalColors.GREEN -> TextColors.green
+        TerminalColors.YELLOW -> TextColors.yellow
+        TerminalColors.BLUE -> TextColors.blue
+        TerminalColors.PURPLE -> TextColors.magenta
+        TerminalColors.CYAN -> TextColors.cyan
+        TerminalColors.WHITE -> TextColors.white
+        else -> null
+    }
+    return if (mordantColor != null) Boba.terminal.render(mordantColor(txt)) else txt
 }
-
-enum class CursorMovement(val value: String) {
-    MOVE_UP("\u001B[1A"),
-    MOVE_DOWN("\u001B[1B"),
-    CLEAR_LINE("\u001B[2K"),
-}
-
-fun moveUp() = CursorMovement.MOVE_UP.value
-fun moveDown() = CursorMovement.MOVE_DOWN.value
-fun clearLine() = CursorMovement.CLEAR_LINE.value
-
-fun colour(txt: String, with: TerminalColors): String = "${with.value}${txt}${TerminalColors.RESET.value}"
-
-fun red(text: String): String = colour(text, with = TerminalColors.RED)
-
-fun green(text: String): String = colour(text, with = TerminalColors.GREEN)
-
-fun blue(text: String): String = colour(text, with = TerminalColors.BLUE)
-
-fun black(text: String): String = colour(text, with = TerminalColors.BLACK)
-
-fun yellow(text: String): String = colour(text, with = TerminalColors.YELLOW)
-
-fun purple(text: String): String = colour(text, with = TerminalColors.PURPLE)
-
-fun cyan(text: String): String = colour(text, with = TerminalColors.CYAN)
-
-fun white(text: String): String = colour(text, with = TerminalColors.WHITE)
-
-fun bold(text: String): String = "${Formatting.BOLD.value}${text}${TerminalColors.RESET.value}"
-
-fun underline(text: String): String = "${Formatting.UNDERLINE.value}${text}${TerminalColors.RESET.value}"
 
 fun createPen(penColor: TerminalColors?): (String) -> String = { if (penColor != null) colour(it, with = penColor) else it }

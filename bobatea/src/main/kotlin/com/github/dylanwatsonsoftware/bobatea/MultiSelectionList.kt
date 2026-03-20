@@ -1,12 +1,13 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.disableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.enableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.readEvent
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
+import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.terminal
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
@@ -19,26 +20,23 @@ class MultiSelectionList(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var style: TextStyle = TextStyle()
+) : BobaComponent(padding, margin, borderStyle, style) {
     var currentIndex = 0
     val selected = TreeSet<String>()
 
     override fun render(): String {
-        val content = StringBuilder()
-        content.append(color(question, GREEN)).append("\n")
+        val lines = mutableListOf<String>()
+        lines.add(terminal.render(TextColors.green(question)))
         options.forEachIndexed { index, item ->
             val isSelected = selected.contains(item)
             val isCursorHighlighted = index == currentIndex
 
             val prefix =
                 if (isSelected && isCursorHighlighted) {
-                    "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
+                    terminal.render(TextColors.yellow("[") + TextColors.green("✔") + TextColors.yellow("]"))
                 } else if (isSelected) {
-                    color(
-                        " ✔ ",
-                        GREEN,
-                    )
+                    terminal.render(TextColors.green(" ✔ "))
                 } else if (isCursorHighlighted) {
                     "[ ]"
                 } else {
@@ -46,17 +44,17 @@ class MultiSelectionList(
                 }
 
             if (isCursorHighlighted) {
-                content.append(color("$prefix ${color(item, YELLOW)}", YELLOW)).append("\n")
+                lines.add(terminal.render(TextColors.yellow("$prefix ${TextColors.yellow(item)}")))
             } else {
-                content.append("$prefix $item").append("\n")
+                lines.add("$prefix $item")
             }
         }
-        content.append("\n")
-        content.append("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.\n")
-        content.append("Press ${color("SPACE", GREEN)} to toggle selection\n")
-        content.append("${color("ENTER", GREEN)} to confirm")
+        lines.add("")
+        lines.add(terminal.render(TextColors.green("Use UP/DOWN arrow keys to choose.")))
+        lines.add(terminal.render(TextColors.green("Press SPACE to toggle selection")))
+        lines.add(terminal.render(TextColors.green("ENTER to confirm")))
 
-        return wrapInBox(content.toString().trimEnd('\n'))
+        return wrapInBox(lines.joinToString("\n"))
     }
 
     fun interact(): MutableSet<String> {

@@ -1,7 +1,8 @@
 [versions]
-jdk = "17"
+jdk = "21"
 jre = "8"
 kotlin = "1.9.20"
+mordant = "2.7.2"
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
@@ -13,5 +14,6 @@ pages = "com.hanggrian.pages:0.1"
 [libraries]
 # main
 kotlinx-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+mordant = { module = "com.github.ajalt.mordant:mordant", version.ref = "mordant" }
 # test
 truth = "com.google.truth:truth:1.4.4"

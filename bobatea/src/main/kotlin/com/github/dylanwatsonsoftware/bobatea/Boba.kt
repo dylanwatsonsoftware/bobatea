@@ -1,18 +1,17 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.terminal.Terminal
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.UP
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.util.TreeSet
 
 class Boba {
     companion object {
+        val terminal = Terminal()
 
         fun selectFromList(
             question: String,
@@ -20,9 +19,9 @@ class Boba {
             padding: Int = 0,
             margin: Int = 0,
             borderStyle: BorderStyle = BorderStyle.NONE,
-            color: String? = null
+            style: TextStyle = TextStyle()
         ): String {
-            return SelectionList(question, options, padding, margin, borderStyle, color).interact()
+            return SelectionList(question, options, padding, margin, borderStyle, style).interact()
         }
 
         fun expandable(
@@ -31,9 +30,9 @@ class Boba {
             padding: Int = 0,
             margin: Int = 0,
             borderStyle: BorderStyle = BorderStyle.NONE,
-            color: String? = null
+            style: TextStyle = TextStyle()
         ) {
-            ExpandableComponent(title, content, padding, margin, borderStyle, color).interact()
+            ExpandableComponent(title, content, padding, margin, borderStyle, style).interact()
         }
 
         fun selectMultipleFromList(
@@ -42,21 +41,18 @@ class Boba {
             padding: Int = 0,
             margin: Int = 0,
             borderStyle: BorderStyle = BorderStyle.NONE,
-            color: String? = null
+            style: TextStyle = TextStyle()
         ): MutableSet<String> {
-            return MultiSelectionList(question, options, padding, margin, borderStyle, color).interact()
+            return MultiSelectionList(question, options, padding, margin, borderStyle, style).interact()
         }
 
         /**
-         * Allows us to have a non-blocking terminal -
-         *
-         * Mostly stolen from: https://darkcoding.net/software/non-blocking-console-io-is-not-possible/
+         * Allows us to have a non-blocking terminal
          */
         fun <T> nonBlockingTerminal(task: () -> T) {
             val ttyConfig = stty("-g")
             try {
                 setTerminalToCBreak()
-
                 task()
             } finally {
                 try {
@@ -68,6 +64,11 @@ class Boba {
         }
 
         fun clear() {
+            terminal.cursor.move {
+                clearScreen()
+            }
+            // Sometimes Mordant's clearScreen is not enough on all OSs for TUI.
+            // But let's try to stick to it.
             ProcessBuilder("clear").inheritIO().start().waitFor()
         }
 
@@ -116,11 +117,11 @@ class Boba {
 
         fun enableMouseTracking(allMotion: Boolean = false) {
             if (allMotion) {
-                print("\u001b[?1003h") // Enable all motion tracking
+                print("\u001b[?1003h")
             } else {
-                print("\u001b[?1000h") // Enable basic mouse tracking
+                print("\u001b[?1000h")
             }
-            print("\u001b[?1006h") // Enable SGR extended mode
+            print("\u001b[?1006h")
             System.out.flush()
         }
 
@@ -133,57 +134,27 @@ class Boba {
 
         @Throws(IOException::class, InterruptedException::class)
         private fun setTerminalToCBreak() {
-            // set the console to be character-buffered instead of line-buffered
             stty("-icanon min 1")
-
-            // disable character echoing
             stty("-echo")
         }
 
-        /**
-         * Execute the stty command with the specified arguments
-         * against the current active terminal.
-         */
         @Throws(IOException::class, InterruptedException::class)
         private fun stty(args: String): String {
             val cmd = "stty $args < /dev/tty"
-
-            return exec(
-                arrayOf(
-                    "sh",
-                    "-c",
-                    cmd,
-                ),
-            )
+            return exec(arrayOf("sh", "-c", cmd))
         }
 
-        /**
-         * Execute the specified command and return the output
-         * (both stdout and stderr).
-         */
         @Throws(IOException::class, InterruptedException::class)
         private fun exec(cmd: Array<String>): String {
             val bout = ByteArrayOutputStream()
-
             val p = Runtime.getRuntime().exec(cmd)
             var c: Int
             var `in` = p.inputStream
-
-            while ((`in`.read().also { c = it }) != -1) {
-                bout.write(c)
-            }
-
+            while ((`in`.read().also { c = it }) != -1) bout.write(c)
             `in` = p.errorStream
-
-            while ((`in`.read().also { c = it }) != -1) {
-                bout.write(c)
-            }
-
+            while ((`in`.read().also { c = it }) != -1) bout.write(c)
             p.waitFor()
-
-            val result = String(bout.toByteArray())
-            return result
+            return String(bout.toByteArray())
         }
     }
-
 }

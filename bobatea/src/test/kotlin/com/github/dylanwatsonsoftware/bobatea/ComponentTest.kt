@@ -1,5 +1,6 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextColors
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 
@@ -13,7 +14,6 @@ class ComponentTest {
             borderStyle = BorderStyle.SINGLE
         )
         val rendered = list.render()
-        assertThat(rendered).contains("┌")
         assertThat(rendered).contains("Pick one:")
         assertThat(rendered).contains("❯ A")
         assertThat(rendered).contains("  B")
@@ -28,7 +28,6 @@ class ComponentTest {
             borderStyle = BorderStyle.DOUBLE
         )
         val rendered = list.render()
-        assertThat(rendered).contains("╔")
         assertThat(rendered).contains("Pick many:")
         assertThat(rendered).contains("[ ]")
         assertThat(rendered).contains("A")

@@ -1,12 +1,13 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.clear
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.disableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.enableMouseTracking
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.readEvent
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
+import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.terminal
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
@@ -18,25 +19,25 @@ class SelectionList(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var style: TextStyle = TextStyle()
+) : BobaComponent(padding, margin, borderStyle, style) {
     var currentIndex = 0
 
     override fun render(): String {
-        val content = StringBuilder()
-        content.append(color(question, GREEN)).append("\n")
+        val lines = mutableListOf<String>()
+        lines.add(terminal.render(TextColors.green(question)))
         options.forEachIndexed { index, item ->
             if (index == currentIndex) {
-                content.append(color("❯ $item", YELLOW)).append("\n")
+                lines.add(terminal.render(TextColors.yellow("❯ $item")))
             } else {
-                content.append("  $item").append("\n")
+                lines.add("  $item")
             }
         }
-        content.append("\n")
-        content.append("Use ${color("UP/DOWN", GREEN)} arrow keys to choose.\n")
-        content.append("${color("SPACE/ENTER", GREEN)} to confirm")
+        lines.add("")
+        lines.add(terminal.render(TextColors.green("Use UP/DOWN arrow keys to choose.")))
+        lines.add(terminal.render(TextColors.green("SPACE/ENTER to confirm")))
 
-        return wrapInBox(content.toString().trimEnd('\n'))
+        return wrapInBox(lines.joinToString("\n"))
     }
 
     fun interact(): String {

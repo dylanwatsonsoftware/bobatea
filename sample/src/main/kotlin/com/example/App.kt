@@ -1,11 +1,11 @@
 package com.example
 
+import com.github.ajalt.mordant.rendering.TextColors
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.expandable
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.selectFromList
 import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.selectMultipleFromList
 import com.github.dylanwatsonsoftware.bobatea.BorderStyle
 import com.github.dylanwatsonsoftware.bobatea.Box
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.CYAN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.DOWN
@@ -31,12 +31,12 @@ class App {
                 Thread.sleep(10000)
             }
             nonBlockingTerminal {
-                println(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, color = CYAN))
+                println(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, style = com.github.ajalt.mordant.rendering.TextStyle(color = TextColors.cyan)))
                 Thread.sleep(2000)
 
                 expandable(
                     title = "Click me to see something cool!",
-                    content = Box("You expanded the section!\nThis is a box inside an expandable component.", borderStyle = BorderStyle.DOUBLE, color = GREEN).render()
+                    content = Box("You expanded the section!\nThis is a box inside an expandable component.", borderStyle = BorderStyle.DOUBLE, style = com.github.ajalt.mordant.rendering.TextStyle(color = TextColors.green)).render()
                 )
 
                 coordinates()
