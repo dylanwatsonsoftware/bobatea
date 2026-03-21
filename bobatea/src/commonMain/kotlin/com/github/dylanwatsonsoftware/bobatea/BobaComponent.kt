@@ -27,7 +27,16 @@ abstract class BobaComponent(
             return s.replace(ANSI_REGEX, "").length
         }
 
-        private val dummyTerminal = MordantTerminal()
+        private class AnsiTerminalInterface : com.github.ajalt.mordant.terminal.TerminalInterface {
+            override fun completePrintRequest(request: com.github.ajalt.mordant.terminal.PrintRequest) {}
+            override fun info(ansiLevel: com.github.ajalt.mordant.rendering.AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): com.github.ajalt.mordant.terminal.TerminalInfo {
+                return com.github.ajalt.mordant.terminal.TerminalInfo(ansiLevel = com.github.ajalt.mordant.rendering.AnsiLevel.TRUECOLOR, ansiHyperLinks = true, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
+            }
+            override fun getTerminalSize(): com.github.ajalt.mordant.rendering.Size? = com.github.ajalt.mordant.rendering.Size(80, 24)
+            override fun readLineOrNull(hideInput: Boolean): String? = null
+        }
+
+        private val dummyTerminal = MordantTerminal(terminalInterface = AnsiTerminalInterface())
 
         fun resolveDimension(dimension: Dimension, available: Int?): Int? {
             return when (dimension) {

@@ -29,10 +29,10 @@ class WasmTerminalInterface : TerminalInterface {
 
     override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
         return TerminalInfo(
-            ansiLevel = ansiLevel ?: AnsiLevel.TRUECOLOR,
-            ansiHyperLinks = hyperlinks ?: true,
-            outputInteractive = outputInteractive ?: true,
-            inputInteractive = inputInteractive ?: true,
+            ansiLevel = AnsiLevel.TRUECOLOR,
+            ansiHyperLinks = true,
+            outputInteractive = true,
+            inputInteractive = true,
             supportsAnsiCursor = true
         )
     }
@@ -56,7 +56,7 @@ class WasmTerminal(
     override val mordant: MordantTerminal = MordantTerminal(terminalInterface = WasmTerminalInterface())
 ) : Terminal {
     override fun write(text: String) {
-        mordant.print(text)
+        mordant.rawPrint(text)
     }
 
     override fun clear() {

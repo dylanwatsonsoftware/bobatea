@@ -36,7 +36,7 @@ class JvmTerminal(
     }
 
     override fun write(text: String) {
-        mordant.print(text)
+        mordant.rawPrint(text)
     }
 
     override fun clear() {
