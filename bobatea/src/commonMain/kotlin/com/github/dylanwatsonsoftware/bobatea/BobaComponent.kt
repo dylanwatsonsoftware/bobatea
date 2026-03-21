@@ -1,5 +1,7 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import kotlin.math.floor
 
 sealed class Dimension {
@@ -25,6 +27,8 @@ abstract class BobaComponent(
             return s.replace(ANSI_REGEX, "").length
         }
 
+        private val dummyTerminal = MordantTerminal()
+
         fun resolveDimension(dimension: Dimension, available: Int?): Int? {
             return when (dimension) {
                 is Dimension.Auto -> null
@@ -41,6 +45,10 @@ abstract class BobaComponent(
     }
 
     abstract fun render(availableWidth: Int? = null, availableHeight: Int? = null): String
+
+    protected fun getMordant(): MordantTerminal {
+        return dummyTerminal
+    }
 
     protected fun wrapInBox(content: String, availableWidth: Int? = null, availableHeight: Int? = null): String {
         if (borderStyle == BorderStyle.NONE && padding == 0 && margin == 0 && color == null &&

@@ -1,5 +1,7 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
 import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
@@ -26,9 +28,9 @@ class ExpandableComponent(
         val text = " $icon  $title "
 
         val coloredTitle = if (isHovered) {
-            color(text, ConsoleColors.WHITE_BACKGROUND + ConsoleColors.BLUE_BOLD)
+            (TextColors.white.bg + TextColors.blue + TextStyles.bold)(text)
         } else {
-            color(text, ConsoleColors.BLUE_BACKGROUND_BRIGHT + ConsoleColors.WHITE_BOLD)
+            (TextColors.brightBlue.bg + TextColors.white + TextStyles.bold)(text)
         }
 
         result.append(coloredTitle).append("\n")

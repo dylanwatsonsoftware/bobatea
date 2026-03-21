@@ -1,14 +1,12 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.ajalt.mordant.rendering.BorderType
+import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import com.github.ajalt.mordant.widgets.Text
-import com.github.ajalt.mordant.table.table
-import kotlin.math.max
-import kotlin.math.min
 
-class Stack(
-    val children: List<BobaComponent>,
+class Table(
+    val headers: List<String>,
+    val rows: List<List<String>>,
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
@@ -21,24 +19,20 @@ class Stack(
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val resolvedWidth = BobaComponent.resolveDimension(width, availableWidth)
-        val resolvedHeight = BobaComponent.resolveDimension(height, availableHeight)
-
-        val borderSize = if (borderStyle != BorderStyle.NONE) 2 else 0
-        val horizontalTotal = padding * 2 + borderSize
-
-        val innerAvailableWidth = (resolvedWidth ?: availableWidth)?.let { max(0, it - horizontalTotal) }
+        val innerAvailableWidth = (resolvedWidth ?: availableWidth ?: 80) - padding * 2
 
         val t = table {
-            borderType = BorderType.BLANK
-            padding(0)
+            header {
+                row(*headers.toTypedArray())
+            }
             body {
-                children.forEach { child ->
-                    row(Text(child.render(innerAvailableWidth, resolvedHeight)))
+                rows.forEach { r ->
+                    row(*r.toTypedArray())
                 }
             }
         }
 
-        val content = getMordant().render(t)
-        return wrapInBox(content, availableWidth, availableHeight)
+        val rendered = getMordant().render(t, width = innerAvailableWidth)
+        return wrapInBox(rendered.trimEnd('\n'), availableWidth, availableHeight)
     }
 }

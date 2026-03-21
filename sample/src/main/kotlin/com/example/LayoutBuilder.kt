@@ -38,8 +38,29 @@ fun buildDemoLayout(terminalWidth: Int): BobaComponent {
         width = Dimension.Percent(100.0)
     )
 
+    val markdown = Markdown(
+        "# Mordant Integration\n" +
+        "Boba Tea now uses **Mordant** for rendering.\n" +
+        "- Supports Markdown\n" +
+        "- Supports Tables\n" +
+        "- Supports Hyperlinks",
+        padding = 1
+    )
+
+    val table = Table(
+        headers = listOf("Feature", "Status"),
+        rows = listOf(
+            listOf("Markdown", "✅ Working"),
+            listOf("Tables", "✅ Working"),
+            listOf("Links", "✅ Working")
+        ),
+        padding = 1
+    )
+
+    val link = Link("Visit Mordant Website", "https://ajalt.github.io/mordant/", padding = 1)
+
     return Stack(
-        children = listOf(header, middleRow, footer),
+        children = listOf(header, middleRow, markdown, table, link, footer),
         width = Dimension.Fixed(terminalWidth)
     )
 }

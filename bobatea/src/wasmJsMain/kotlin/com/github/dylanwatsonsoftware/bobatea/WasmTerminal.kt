@@ -1,5 +1,11 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.Size
+import com.github.ajalt.mordant.terminal.PrintRequest
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
+import com.github.ajalt.mordant.terminal.TerminalInfo
+import com.github.ajalt.mordant.terminal.TerminalInterface
 import kotlinx.coroutines.channels.Channel
 
 private val _inputChannel = Channel<String>(Channel.UNLIMITED)
@@ -16,11 +22,48 @@ private external fun jsWrite(data: String)
 @JsFun("() => { return window.innerWidth.toString() + ';' + window.innerHeight.toString(); }")
 private external fun jsGetViewportSize(): String
 
-class WasmTerminal : Terminal {
-    override fun write(text: String) = jsWrite(text)
+class WasmTerminalInterface : TerminalInterface {
+    override fun completePrintRequest(request: PrintRequest) {
+        if (request.text.isNotEmpty()) jsWrite(request.text)
+    }
+
+    override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
+        return TerminalInfo(
+            ansiLevel = ansiLevel ?: AnsiLevel.TRUECOLOR,
+            ansiHyperLinks = hyperlinks ?: true,
+            outputInteractive = outputInteractive ?: true,
+            inputInteractive = inputInteractive ?: true,
+            supportsAnsiCursor = true
+        )
+    }
+
+    override fun getTerminalSize(): Size? {
+        return try {
+            val sizeStr = jsGetViewportSize()
+            val parts = sizeStr.split(";")
+            val width = parts[0].toInt() / 10
+            val height = parts[1].toInt() / 20
+            Size(width, height)
+        } catch (e: Exception) {
+            Size(80, 24)
+        }
+    }
+
+    override fun readLineOrNull(hideInput: Boolean): String? = null
+}
+
+class WasmTerminal(
+    override val mordant: MordantTerminal = MordantTerminal(terminalInterface = WasmTerminalInterface())
+) : Terminal {
+    override fun write(text: String) {
+        mordant.print(text)
+    }
 
     override fun clear() {
-        jsWrite("\u001b[2J\u001b[H")
+        mordant.cursor.move {
+            clearScreen()
+            setPosition(0, 0)
+        }
     }
 
     override suspend fun readEvent(): BobaEvent {
@@ -40,17 +83,8 @@ class WasmTerminal : Terminal {
     }
 
     override fun size(): Pair<Int, Int> {
-        return try {
-            val sizeStr = jsGetViewportSize()
-            val parts = sizeStr.split(";")
-            // Simplified: estimating terminal size based on viewport
-            // In a real xterm.js setup, we'd query the terminal object
-            val width = parts[0].toInt() / 10 // roughly
-            val height = parts[1].toInt() / 20 // roughly
-            width to height
-        } catch (e: Exception) {
-            80 to 24
-        }
+        val size = mordant.size
+        return size.width to size.height
     }
 
     private fun parseInput(data: String): BobaEvent {

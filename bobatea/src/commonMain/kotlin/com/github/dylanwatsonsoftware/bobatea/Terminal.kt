@@ -1,6 +1,9 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
+
 interface Terminal {
+    val mordant: MordantTerminal
     fun write(text: String)
     fun clear()
     suspend fun readEvent(): BobaEvent

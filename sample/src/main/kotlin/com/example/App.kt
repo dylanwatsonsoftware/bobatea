@@ -14,6 +14,7 @@ class App {
                 runBlocking {
                     layoutDemo(terminal)
                     nestedLayoutDemo(terminal)
+                    mordantDemo(terminal)
 
                     LoadingIndicator.runLoading("Loading yo!", LoaderStyle.SMALL_GREEN, terminal) {
                         delay(2000)
@@ -99,6 +100,26 @@ class App {
 
             terminal.write(root.render(width, height) + "\n")
 
+            terminal.write("\nPress any key to continue...")
+            terminal.readEvent()
+        }
+
+        private suspend fun mordantDemo(terminal: Terminal) {
+            terminal.clear()
+            val (width, height) = terminal.size()
+
+            val md = Markdown("# Mordant Components\nThis screen showcases components powered by Mordant.")
+            val link = Link("Visit Mordant GitHub", "https://github.com/ajalt/mordant")
+
+            val stack = Stack(
+                children = listOf(md, link),
+                borderStyle = BorderStyle.DOUBLE,
+                padding = 1,
+                color = ConsoleColors.CYAN,
+                width = Dimension.Fixed(minOf(width, 60))
+            )
+
+            terminal.write(stack.render(width, height) + "\n")
             terminal.write("\nPress any key to continue to the original demo...")
             terminal.readEvent()
         }

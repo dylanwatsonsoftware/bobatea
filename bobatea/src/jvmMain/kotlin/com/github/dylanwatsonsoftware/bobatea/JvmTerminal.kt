@@ -1,11 +1,14 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
-class JvmTerminal : Terminal {
+class JvmTerminal(
+    override val mordant: MordantTerminal = MordantTerminal()
+) : Terminal {
     private var savedTtyConfig: String? = null
 
     fun setup() {
@@ -33,12 +36,14 @@ class JvmTerminal : Terminal {
     }
 
     override fun write(text: String) {
-        print(text)
-        System.out.flush()
+        mordant.print(text)
     }
 
     override fun clear() {
-        write("\u001b[2J\u001b[H")
+        mordant.cursor.move {
+            clearScreen()
+            setPosition(0, 0)
+        }
     }
 
     override suspend fun readEvent(): BobaEvent = withContext(Dispatchers.IO) {
@@ -63,19 +68,8 @@ class JvmTerminal : Terminal {
     }
 
     override fun size(): Pair<Int, Int> {
-        return try {
-            val output = stty("size").trim()
-            val parts = output.split(" ")
-            if (parts.size == 2) {
-                val rows = parts[0].toInt()
-                val cols = parts[1].toInt()
-                cols to rows
-            } else {
-                80 to 24
-            }
-        } catch (e: Exception) {
-            80 to 24
-        }
+        val size = mordant.size
+        return size.width to size.height
     }
 
     fun getChar(): Int {
