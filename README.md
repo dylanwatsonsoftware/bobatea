@@ -4,7 +4,7 @@
     <a href="https://github.com/dylanwatsonsoftware/bobatea"><img src="https://raw.githubusercontent.com/dylanwatsonsoftware/bobatea/refs/heads/main/bobatea.png" width="400" alt="Boba Tea"/></a><br/>
     <a href="https://github.com/dylanwatsonsoftware/bobatea/actions"><img src="https://github.com/dylanwatsonsoftware/bobatea/actions/workflows/build.yml/badge.svg" alt="Build Status"/></a>
     <a href="https://jitpack.io/#dylanwatsonsoftware/bobatea"><img src="https://jitpack.io/v/dylanwatsonsoftware/bobatea.svg" alt="JitPack"/></a>
-    <a href="https://docs.oracle.com/javase/8/"><img src="https://img.shields.io/badge/java-11+-informational" alt="Java"/></a>
+    <a href="https://docs.oracle.com/javase/11/"><img src="https://img.shields.io/badge/Java-11+-informational?logo=openjdk&amp;logoColor=white" alt="Java"/></a>
 </p>
 
 ## Download
