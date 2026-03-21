@@ -22,115 +22,154 @@ fun main() {
     MainScope().launch {
         val terminal = WasmTerminal()
 
-        // 1. Welcome
-        terminal.write(Box("Welcome to Boba Tea Live Demo!", borderStyle = BorderStyle.ROUNDED, color = CYAN, padding = 1).render() + "\n")
-        delay(2000)
+        // 1. Welcome & Initial Loading
+        terminal.write(Box("Welcome to Boba Tea WASM Demo!", borderStyle = BorderStyle.ROUNDED, color = CYAN, padding = 1).render() + "\n")
+        delay(1500)
 
-        // 2. Loading
-        terminal.write("${color("Step 1: Loading Indicators", GREEN)}\n")
-        LoadingIndicator.runLoading("Processing your request...", LoaderStyle.SMALL_GREEN, terminal) {
-            delay(3000)
+        LoadingIndicator.runLoading("Booting TUI Engine...", LoaderStyle.SMALL_GREEN, terminal) {
+            delay(2000)
         }
         terminal.write("\n")
-        delay(1500)
 
-        // 3. Expandable
-        terminal.write("${color("Step 2: Interactive Components", BLUE)}\n")
-        terminal.write("Try expanding the section below (Click or Space/Enter)\n")
-        ExpandableComponent(
-            title = "Click me to see a secret!",
-            content = Box(
-                "Surprise! You found the hidden box.\nBoba Tea makes it easy to create complex TUI layouts.",
-                borderStyle = BorderStyle.DOUBLE,
-                color = GREEN,
-                padding = 1
-            ).render()
-        ).interact(terminal)
-        terminal.write("\n")
-        delay(1500)
+        mainMenu(terminal)
+    }
+}
 
-        // 4. Coordinates
-        terminal.write("${color("Step 3: Custom Navigation", YELLOW)}\n")
-        terminal.write("Use WASD or Arrows to move the 'X' and press Enter to confirm.\n")
-        delay(1000)
-        coordinates(terminal)
-        terminal.write("\n")
-        delay(1500)
+private suspend fun mainMenu(terminal: Terminal) {
+    val options = listOf(
+        "Layout Showcase",
+        "Mordant (Markdown & Links)",
+        "Interactive Expandable",
+        "Coordinate Explorer",
+        "Selection Lists",
+        "Multi-Selection",
+        "Reset Demo"
+    )
 
-        // 5. Selection
-        terminal.write("${color("Step 4: Selection Lists", CYAN)}\n")
+    while (true) {
+        terminal.clear()
+        val (width, height) = terminal.size()
+
         val selection = SelectionList(
-            question = "What's your favourite Boba flavor?",
-            options = listOf("Milk Tea", "Taro", "Matcha", "Fruit Tea", "Brown Sugar"),
-        ).interact(terminal)
-        terminal.write("Excellent choice: $selection!\n")
-        delay(1500)
-
-        // 6. Multi-Selection
-        terminal.write("${color("Step 5: Multi-Selection", BLUE)}\n")
-        val multiSelections = MultiSelectionList(
-            question = "Select your favourite toppings (Space to toggle, Enter to confirm):",
-            options = listOf("Pearls", "Grass Jelly", "Pudding", "Aloe Vera", "Red Bean"),
-        ).interact(terminal)
-        terminal.write("You selected: ${multiSelections.joinToString(", ")}\n")
-        delay(2000)
-
-        // 7. Nested Layouts
-        terminal.write("${color("Step 6: Complex Nested Layouts", CYAN)}\n")
-        val box1 = Box("Box 1.1\nCol 1", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
-        val box2 = Box("Box 1.2\nCol 2", borderStyle = BorderStyle.DOUBLE, width = Dimension.Fixed(15))
-        val box3 = Box("Box 1.3\nCol 3", borderStyle = BorderStyle.ROUNDED, width = Dimension.Fixed(15))
-
-        val inline1 = Inline(
-            children = listOf(box1, box2, box3),
-            padding = 1,
+            question = "WASM Interactive Menu - Choose an example:",
+            options = options,
             borderStyle = BorderStyle.SINGLE,
-            color = CYAN
-        )
-
-        val box4 = Box("Box 2.1\nCol A", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
-        val box5 = Box("Box 2.2\nCol B", borderStyle = BorderStyle.DOUBLE, width = Dimension.Fixed(15))
-        val box6 = Box("Box 2.3\nCol C", borderStyle = BorderStyle.ROUNDED, width = Dimension.Fixed(15))
-
-        val inline2 = Inline(
-            children = listOf(box4, box5, box6),
-            padding = 1,
-            borderStyle = BorderStyle.SINGLE,
-            color = YELLOW
-        )
-
-        val root = Stack(
-            children = listOf(
-                Box("Complex Nested Layout Demo\n(Stack of Inlines of Boxes)", padding = 1, color = GREEN),
-                inline1,
-                inline2
-            ),
-            width = Dimension.Fixed(55),
-            borderStyle = BorderStyle.DOUBLE
-        )
-
-        terminal.write(root.render(60, 24) + "\n")
-        delay(4000)
-
-        // 8. Markdown & Table
-        terminal.write("${color("Step 7: New Mordant Components", CYAN)}\n")
-        val md = Markdown("# Markdown Support\nThis is rendered using **Mordant**.")
-        val link = Link("Visit Mordant GitHub", "https://github.com/ajalt/mordant")
-        val stack = Stack(
-            children = listOf(md, link),
-            borderStyle = BorderStyle.DOUBLE,
             padding = 1,
             color = CYAN,
-            width = Dimension.Fixed(55)
-        )
-        terminal.write(stack.render(60) + "\n")
+            width = Dimension.Fixed(minOf(width, 50))
+        ).interact(terminal)
 
-        val tbl = Table(listOf("A", "B"), listOf(listOf("1", "2"), listOf("3", "4")))
-        terminal.write(tbl.render(60) + "\n")
-        delay(4000)
-
-        terminal.write("\n" + color("Demo Complete! Scroll down to see more examples.", GREEN) + "\n")
+        when (selection) {
+            "Layout Showcase" -> layoutShowcase(terminal)
+            "Mordant (Markdown & Links)" -> mordantShowcase(terminal)
+            "Interactive Expandable" -> expandableShowcase(terminal)
+            "Coordinate Explorer" -> coordinatesShowcase(terminal)
+            "Selection Lists" -> selectionShowcase(terminal)
+            "Multi-Selection" -> multiSelectionShowcase(terminal)
+            "Reset Demo" -> return
+        }
     }
+}
+
+private suspend fun renderWithBack(terminal: Terminal, component: BobaComponent) {
+    val (width, height) = terminal.size()
+    val back = BackButton(margin = 1)
+
+    fun renderAll() {
+        terminal.clear()
+        terminal.write(component.render(width, height) + "\n")
+        // BackButton will have 1 newline before (from renderWithBack above)
+        // and its own margin (1 newline before)
+        terminal.write(back.render(width, height) + "\n")
+    }
+
+    renderAll()
+    terminal.enableMouseTracking(allMotion = true)
+    try {
+        while (true) {
+            val event = terminal.readEvent()
+            if (event is BobaEvent.Key && (event.code == 'q'.code || event.code == 'Q'.code)) return
+
+            if (event is BobaEvent.Mouse) {
+                // Calculate position based on the rendered layout:
+                // component.render() height + 1 (newline) + back.margin (1) + 1 (for 1-based coord)
+                val compLines = component.render(width, height).lines().size
+                val backY = compLines + 2
+                if (back.isClicked(event, 2, backY)) return
+            }
+        }
+    } finally {
+        terminal.disableMouseTracking()
+    }
+}
+
+private suspend fun layoutShowcase(terminal: Terminal) {
+    val box1 = Box("Box 1.1\nCol 1", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
+    val box2 = Box("Box 1.2\nCol 2", borderStyle = BorderStyle.DOUBLE, width = Dimension.Fixed(15))
+    val box3 = Box("Box 1.3\nCol 3", borderStyle = BorderStyle.ROUNDED, width = Dimension.Fixed(15))
+
+    val inline1 = Inline(children = listOf(box1, box2, box3), padding = 1, borderStyle = BorderStyle.SINGLE, color = CYAN)
+
+    val root = Stack(
+        children = listOf(
+            Box("Complex Nested Layout Demo", padding = 1, color = GREEN),
+            inline1
+        ),
+        width = Dimension.Fixed(55),
+        borderStyle = BorderStyle.DOUBLE
+    )
+
+    renderWithBack(terminal, root)
+}
+
+private suspend fun mordantShowcase(terminal: Terminal) {
+    val md = Markdown("# Mordant Integration\nBoba Tea now uses **Mordant** for rendering.\n- Rich Markdown support\n- OSC 8 Hyperlinks\n- Flexible Tables")
+    val link = Link("Visit Mordant GitHub", "https://github.com/ajalt/mordant")
+    val tbl = Table(listOf("Component", "Status"), listOf(listOf("Markdown", "✅"), listOf("Table", "✅"), listOf("Link", "✅")))
+
+    val stack = Stack(
+        children = listOf(md, link, tbl),
+        borderStyle = BorderStyle.ROUNDED,
+        padding = 1,
+        color = CYAN,
+        width = Dimension.Fixed(55)
+    )
+
+    renderWithBack(terminal, stack)
+}
+
+private suspend fun expandableShowcase(terminal: Terminal) {
+    ExpandableComponent(
+        title = "Click to reveal secret",
+        content = Box("You found it!\nMordant makes this look great.", borderStyle = BorderStyle.DOUBLE, color = GREEN).render(),
+        padding = 1,
+        borderStyle = BorderStyle.SINGLE,
+        color = BLUE
+    ).interact(terminal)
+}
+
+private suspend fun selectionShowcase(terminal: Terminal) {
+    val selection = SelectionList(
+        question = "What's your favourite Boba?",
+        options = listOf("Milk Tea", "Matcha", "Taro", "Brown Sugar", "Go Back"),
+    ).interact(terminal)
+    if (selection != "Go Back") {
+        terminal.write("Excellent: $selection!\n")
+        delay(1000)
+    }
+}
+
+private suspend fun multiSelectionShowcase(terminal: Terminal) {
+    val multiSelections = MultiSelectionList(
+        question = "Toppings (Space to toggle, Enter to confirm):",
+        options = listOf("Pearls", "Grass Jelly", "Pudding", "Aloe Vera", "Red Bean"),
+    ).interact(terminal)
+    terminal.write("You selected: ${multiSelections.joinToString(", ")}\n")
+    delay(1500)
+}
+
+private suspend fun coordinatesShowcase(terminal: Terminal) {
+    coordinates(terminal as WasmTerminal)
 }
 
 private suspend fun coordinates(terminal: WasmTerminal) {

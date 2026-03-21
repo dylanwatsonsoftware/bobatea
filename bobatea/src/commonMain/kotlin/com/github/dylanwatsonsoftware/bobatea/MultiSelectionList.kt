@@ -1,8 +1,7 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.GREEN
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.YELLOW
-import com.github.dylanwatsonsoftware.bobatea.ConsoleColors.Companion.color
+import com.github.ajalt.mordant.rendering.TextColors.green
+import com.github.ajalt.mordant.rendering.TextColors.yellow
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
 
@@ -23,16 +22,16 @@ class MultiSelectionList(
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val content = StringBuilder()
-        content.append(color(question, GREEN)).append("\n")
+        content.append(green(question)).append("\n")
         options.forEachIndexed { index, item ->
             val isSelected = selected.contains(item)
             val isCursorHighlighted = index == currentIndex
 
             val prefix =
                 if (isSelected && isCursorHighlighted) {
-                    "${color("[", YELLOW)}${color("✔", GREEN)}${color("]", YELLOW)}"
+                    "${yellow("[")}${green("✔")}${yellow("]")}"
                 } else if (isSelected) {
-                    color(" ✔ ", GREEN)
+                    green(" ✔ ")
                 } else if (isCursorHighlighted) {
                     "[ ]"
                 } else {
@@ -40,22 +39,22 @@ class MultiSelectionList(
                 }
 
             if (isCursorHighlighted) {
-                content.append(color("$prefix ${color(item, YELLOW)}", YELLOW)).append("\n")
+                content.append(yellow("$prefix ${yellow(item)}")).append("\n")
             } else {
                 content.append("$prefix $item").append("\n")
             }
         }
         content.append("\n")
-        content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
-        content.append("Press ${color("SPACE", GREEN)} to toggle selection\n")
-        content.append("${color("ENTER", GREEN)} or ${color("Q", GREEN)} to confirm")
+        content.append("Use ${green("UP/DOWN")} or ${green("W/S")} keys to choose.\n")
+        content.append("Press ${green("SPACE")} to toggle selection\n")
+        content.append("${green("ENTER")} or ${green("Q")} to confirm")
 
         return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
     }
 
     suspend fun interact(terminal: Terminal): MutableSet<String> {
         val (availableWidth, availableHeight) = terminal.size()
-        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
+        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 // +1 for the question line
 
         fun printList() {
             terminal.clear()
@@ -91,7 +90,7 @@ class MultiSelectionList(
                     }
                     is BobaEvent.Mouse -> {
                         if (event.action == MouseAction.PRESS) {
-                            val clickedIndex = event.y - startLine - 2
+                            val clickedIndex = event.y - startLine
                             if (clickedIndex in options.indices) {
                                 currentIndex = clickedIndex
                                 toggle(currentIndex)

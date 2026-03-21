@@ -46,8 +46,6 @@ class Box(
         val renderWidth = resolvedWidth ?: availableWidth ?: 80
 
         val result = StringBuilder()
-        // We use a prefix to protect margins from being trimmed
-        result.append("MARGIN_START")
         repeat(margin) { result.append("\n") }
 
         // Handle dimensions via Mordant's render if possible, or manual wrapping
@@ -66,13 +64,14 @@ class Box(
         }
 
         finalLines.forEach { line ->
-            var finalLine = line
-            if (finalLine.isNotBlank() || borderStyle != BorderStyle.NONE) {
-                result.append(" ".repeat(margin))
+            if (line.isNotBlank() || borderStyle != BorderStyle.NONE) {
+                if (margin > 0) result.append(" ".repeat(margin))
+
+                var finalLine = line
                 resolvedWidth?.let { w ->
                     val vLen = BobaComponent.visibleLength(finalLine)
                     if (vLen > w) {
-                        // Truncate visible part correctly
+                        // Truncate visible part correctly, but keep trailing ANSI (resets)
                         var currentVisible = 0
                         val truncated = StringBuilder()
                         var j = 0
@@ -89,21 +88,30 @@ class Box(
                             currentVisible++
                             j++
                         }
+                        // Append remaining ANSI sequences from the rest of the line (to catch resets)
+                        while (j < finalLine.length) {
+                            val match = BobaComponent.ANSI_REGEX.find(finalLine, j)
+                            if (match != null && match.range.first == j) {
+                                truncated.append(match.value)
+                                j = match.range.last + 1
+                            } else {
+                                j++
+                            }
+                        }
                         finalLine = truncated.toString()
                     }
                 }
-                result.append(finalLine).append("\n")
+
+                if (color != null) result.append(color)
+                result.append(finalLine)
+                if (color != null) result.append(ConsoleColors.RESET)
+                result.append("\n")
             }
         }
 
         repeat(margin) { result.append("\n") }
-        result.append("MARGIN_END")
 
-        val output = result.toString()
-            .removePrefix("MARGIN_START")
-            .removeSuffix("MARGIN_END")
-            .trimEnd('\n')
-        return if (color != null) "$color$output${ConsoleColors.RESET}" else output
+        return result.toString().trimEnd('\n')
     }
 
     override fun toString(): String = render()

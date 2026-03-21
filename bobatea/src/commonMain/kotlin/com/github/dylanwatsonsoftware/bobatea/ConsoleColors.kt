@@ -13,7 +13,7 @@ class ConsoleColors {
     private class AnsiTerminalInterface : TerminalInterface {
         override fun completePrintRequest(request: PrintRequest) {}
         override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
-            return TerminalInfo(ansiLevel = AnsiLevel.TRUECOLOR, ansiHyperLinks = true, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
+            return TerminalInfo(ansiLevel = AnsiLevel.TRUECOLOR, ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
         }
         override fun getTerminalSize(): Size? = Size(80, 24)
         override fun readLineOrNull(hideInput: Boolean): String? = null
