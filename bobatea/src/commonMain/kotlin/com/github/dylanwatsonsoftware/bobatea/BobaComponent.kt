@@ -76,4 +76,7 @@ abstract class BobaComponent(
         }
         return Box(content, padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
     }
+
+    protected fun getContentStartX(): Int = x + margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
+    protected fun getContentStartY(): Int = y + margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 }

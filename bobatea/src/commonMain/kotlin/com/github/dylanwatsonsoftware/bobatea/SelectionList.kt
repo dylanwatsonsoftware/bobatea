@@ -64,7 +64,7 @@ class SelectionList(
             }
             is BobaEvent.Mouse -> {
                 if (event.action == MouseAction.PRESS) {
-                    val startLine = this.y + (if (this.borderStyle != BorderStyle.NONE) 1 else 0) + this.padding + 2
+                    val startLine = getContentStartY() + 2 // +2 for question and its newline
                     val clickedIndex = event.y - startLine
                     if (clickedIndex in options.indices) {
                         if (clickedIndex == currentIndex) {

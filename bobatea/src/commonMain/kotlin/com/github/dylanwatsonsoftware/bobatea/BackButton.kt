@@ -32,9 +32,9 @@ class BackButton(
         }
         if (event is BobaEvent.Mouse && event.action == MouseAction.PRESS) {
             val textLength = 16 // " [ ← Back (q) ] ".length
-            if (event.y == y + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 &&
-                event.x >= x + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding &&
-                event.x <= x + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + textLength) {
+            val startX = getContentStartX()
+            val startY = getContentStartY()
+            if (event.y == startY && event.x >= startX && event.x < startX + textLength) {
                 onClicked()
                 return true
             }

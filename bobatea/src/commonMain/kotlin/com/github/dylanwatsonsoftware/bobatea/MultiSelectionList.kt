@@ -81,7 +81,7 @@ class MultiSelectionList(
             }
             is BobaEvent.Mouse -> {
                 if (event.action == MouseAction.PRESS) {
-                    val startLine = y + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1
+                    val startLine = getContentStartY() + 1
                     val clickedIndex = event.y - startLine
                     if (clickedIndex in options.indices) {
                         currentIndex = clickedIndex

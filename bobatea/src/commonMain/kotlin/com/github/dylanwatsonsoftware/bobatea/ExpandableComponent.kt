@@ -49,7 +49,8 @@ class ExpandableComponent(
     }
 
     override fun onEvent(event: BobaEvent): Boolean {
-        val titleLine = y + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
+        val titleLine = getContentStartY()
+        val titleStart = getContentStartX()
         when (event) {
             is BobaEvent.Key -> {
                 when (event.code) {
@@ -60,10 +61,10 @@ class ExpandableComponent(
                 }
             }
             is BobaEvent.Mouse -> {
-                val currentlyHovered = event.y == titleLine + 1 && event.x >= x && event.x <= x + title.length + 4
+                val currentlyHovered = event.y == titleLine && event.x >= titleStart && event.x < titleStart + title.length + 4
                 if (currentlyHovered != isHovered) {
                     isHovered = currentlyHovered
-                    // return true to re-render?
+                    return true
                 }
 
                 if (event.action == MouseAction.PRESS && event.button < 64 && currentlyHovered) {
