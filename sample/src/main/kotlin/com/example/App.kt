@@ -81,7 +81,12 @@ class App {
                 while (true) {
                     val event = terminal.readEvent()
                     if (event is BobaEvent.Key && (event.code == 'q'.code || event.code == 'Q'.code)) return
-                    if (event is BobaEvent.Mouse && back.isClicked(event, height - 3)) return
+
+                    if (event is BobaEvent.Mouse) {
+                        val compLines = component.render(width, height).lines().size
+                        val backY = compLines + 2
+                        if (back.isClicked(event, 2, backY)) return
+                    }
                 }
             } finally {
                 terminal.disableMouseTracking()

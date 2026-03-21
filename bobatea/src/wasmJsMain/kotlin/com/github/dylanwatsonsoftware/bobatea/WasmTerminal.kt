@@ -30,7 +30,7 @@ class WasmTerminalInterface : TerminalInterface {
     override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
         return TerminalInfo(
             ansiLevel = AnsiLevel.TRUECOLOR,
-            ansiHyperLinks = true,
+            ansiHyperLinks = false,
             outputInteractive = true,
             inputInteractive = true,
             supportsAnsiCursor = true

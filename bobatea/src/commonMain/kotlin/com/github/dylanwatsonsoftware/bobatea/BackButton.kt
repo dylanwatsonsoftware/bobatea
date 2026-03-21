@@ -15,14 +15,16 @@ class BackButton(
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
-        val text = " [ Back (q) ] "
+        val text = " [ ← Back (q) ] "
         val styled = (TextColors.red.bg + TextColors.white + TextStyles.bold)(text)
         return wrapInBox(styled, availableWidth, availableHeight)
     }
 
-    fun isClicked(event: BobaEvent.Mouse, yOffset: Int): Boolean {
-        // Simple hit detection for the back button
-        // Assuming it's rendered at the bottom or a specific spot
-        return event.action == MouseAction.PRESS && event.y >= yOffset && event.y <= yOffset + 2
+    fun isClicked(event: BobaEvent.Mouse, xOffset: Int, yOffset: Int): Boolean {
+        val textLength = 16 // " [ ← Back (q) ] ".length
+        return event.action == MouseAction.PRESS &&
+               event.y == yOffset &&
+               event.x >= xOffset &&
+               event.x <= xOffset + textLength
     }
 }

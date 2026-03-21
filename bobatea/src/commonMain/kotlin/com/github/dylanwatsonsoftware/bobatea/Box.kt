@@ -46,8 +46,6 @@ class Box(
         val renderWidth = resolvedWidth ?: availableWidth ?: 80
 
         val result = StringBuilder()
-        // We use a prefix to protect margins from being trimmed
-        result.append("MARGIN_START")
         repeat(margin) { result.append("\n") }
 
         // Handle dimensions via Mordant's render if possible, or manual wrapping
@@ -68,7 +66,7 @@ class Box(
         finalLines.forEach { line ->
             var finalLine = line
             if (finalLine.isNotBlank() || borderStyle != BorderStyle.NONE) {
-                result.append(" ".repeat(margin))
+                if (margin > 0) result.append(" ".repeat(margin))
                 resolvedWidth?.let { w ->
                     val vLen = BobaComponent.visibleLength(finalLine)
                     if (vLen > w) {
@@ -97,12 +95,8 @@ class Box(
         }
 
         repeat(margin) { result.append("\n") }
-        result.append("MARGIN_END")
 
-        val output = result.toString()
-            .removePrefix("MARGIN_START")
-            .removeSuffix("MARGIN_END")
-            .trimEnd('\n')
+        val output = result.toString().trimEnd('\n')
         return if (color != null) "$color$output${ConsoleColors.RESET}" else output
     }
 

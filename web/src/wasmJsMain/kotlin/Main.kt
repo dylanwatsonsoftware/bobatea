@@ -78,6 +78,8 @@ private suspend fun renderWithBack(terminal: Terminal, component: BobaComponent)
     fun renderAll() {
         terminal.clear()
         terminal.write(component.render(width, height) + "\n")
+        // BackButton will have 1 newline before (from renderWithBack above)
+        // and its own margin (1 newline before)
         terminal.write(back.render(width, height) + "\n")
     }
 
@@ -87,8 +89,14 @@ private suspend fun renderWithBack(terminal: Terminal, component: BobaComponent)
         while (true) {
             val event = terminal.readEvent()
             if (event is BobaEvent.Key && (event.code == 'q'.code || event.code == 'Q'.code)) return
-            // For WASM, we use a fixed estimate for back button position if size detection is tricky
-            if (event is BobaEvent.Mouse && back.isClicked(event, height - 3)) return
+
+            if (event is BobaEvent.Mouse) {
+                // Calculate position based on the rendered layout:
+                // component.render() height + 1 (newline) + back.margin (1) + 1 (for 1-based coord)
+                val compLines = component.render(width, height).lines().size
+                val backY = compLines + 2
+                if (back.isClicked(event, 2, backY)) return
+            }
         }
     } finally {
         terminal.disableMouseTracking()
