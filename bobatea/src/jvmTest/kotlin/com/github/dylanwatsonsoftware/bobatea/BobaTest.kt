@@ -1,6 +1,5 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.dylanwatsonsoftware.bobatea.Boba.Companion.nonBlockingTerminal
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,9 +15,5 @@ class BobaTest {
         }
 
         assertEquals(Boba::class.simpleName, "Boba")
-
-        nonBlockingTerminal {
-            println("Can print non-blocking")
-        }
     }
 }
