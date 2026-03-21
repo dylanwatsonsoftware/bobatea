@@ -43,11 +43,12 @@ class ExpandableComponent(
     }
 
     suspend fun interact(terminal: Terminal) {
+        val (availableWidth, availableHeight) = terminal.size()
         val titleLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 
         fun printExpandable() {
             terminal.clear()
-            terminal.write(render() + "\n")
+            terminal.write(render(availableWidth, availableHeight) + "\n")
         }
 
         printExpandable()

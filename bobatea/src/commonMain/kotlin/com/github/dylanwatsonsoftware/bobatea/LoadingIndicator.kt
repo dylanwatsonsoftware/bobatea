@@ -32,7 +32,8 @@ class LoadingIndicator(
         }
     }
 
-    override fun render(availableWidth: Int?, availableHeight: Int?): String = ""
+    override fun render(availableWidth: Int?, availableHeight: Int?): String =
+        Box("", padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
 
     suspend fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: suspend () -> R): R {
         return coroutineScope {
@@ -49,10 +50,12 @@ class LoadingIndicator(
         val charSequence = style.pattern.asInfiniteSequence()
         val pen = createPen(style.color)
 
+        val (availableWidth, availableHeight) = terminal.size()
         for (char in charSequence) {
             val loadingLine = "${pen(char.toString())} $message"
-            val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                Box(loadingLine, padding, margin, borderStyle, color).render()
+            val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0 ||
+                width != Dimension.Auto || maxWidth != Dimension.Auto || height != Dimension.Auto || maxHeight != Dimension.Auto) {
+                Box(loadingLine, padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
             } else {
                 "\r$loadingLine"
             }

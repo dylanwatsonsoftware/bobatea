@@ -34,9 +34,13 @@ class Inline(
         }
 
         // Divide available width among children (simplified, could be more complex with weighted widths)
-        val childAvailableWidth = innerAvailableWidth?.let { it / children.size }
+        val childAvailableWidth = if (children.isNotEmpty()) {
+            innerAvailableWidth?.let { it / children.size }
+        } else {
+            null
+        }
 
-        val renderedChildren = children.map { it.render(childAvailableWidth, null) }
+        val renderedChildren = children.map { it.render(childAvailableWidth, resolvedHeight ?: resolvedMaxHeight) }
         val childrenAsLines = renderedChildren.map { it.lines() }
 
         val maxChildHeight = childrenAsLines.maxOfOrNull { it.size } ?: 0

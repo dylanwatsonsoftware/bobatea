@@ -45,9 +45,11 @@ class Box(
 
         var finalWidth = resolvedWidth ?: (contentWidth + horizontalTotal)
         resolvedMaxWidth?.let { finalWidth = min(finalWidth, it) }
+        finalWidth = max(finalWidth, horizontalTotal)
 
         var finalHeight = resolvedHeight ?: (contentHeight + verticalTotal)
         resolvedMaxHeight?.let { finalHeight = min(finalHeight, it) }
+        finalHeight = max(finalHeight, verticalTotal)
 
         val innerWidth = max(0, finalWidth - horizontalTotal)
         val innerHeight = max(0, finalHeight - verticalTotal)
@@ -94,11 +96,14 @@ class Box(
                     var currentVisible = 0
                     val truncated = StringBuilder()
                     var j = 0
+                    var hasOpenAnsi = false
                     while (j < line.length && currentVisible < innerWidth) {
                         if (line[j] == '\u001b') {
                             val match = BobaComponent.ANSI_REGEX.find(line, j)
                             if (match != null && match.range.first == j) {
-                                truncated.append(match.value)
+                                val ansiSeq = match.value
+                                truncated.append(ansiSeq)
+                                hasOpenAnsi = if (ansiSeq == ConsoleColors.RESET) false else true
                                 j = match.range.last + 1
                                 continue
                             }
@@ -106,6 +111,9 @@ class Box(
                         truncated.append(line[j])
                         currentVisible++
                         j++
+                    }
+                    if (hasOpenAnsi) {
+                        truncated.append(ConsoleColors.RESET)
                     }
                     result.append(truncated.toString())
                 }

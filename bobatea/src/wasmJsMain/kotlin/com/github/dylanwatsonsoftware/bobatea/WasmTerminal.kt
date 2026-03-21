@@ -13,6 +13,9 @@ fun pushTerminalInput(data: String) {
 @JsFun("(data) => { if(window._bobaterm) window._bobaterm.write(data); }")
 private external fun jsWrite(data: String)
 
+@JsFun("() => { return window.innerWidth.toString() + ';' + window.innerHeight.toString(); }")
+private external fun jsGetViewportSize(): String
+
 class WasmTerminal : Terminal {
     override fun write(text: String) = jsWrite(text)
 
@@ -36,7 +39,19 @@ class WasmTerminal : Terminal {
         jsWrite("\u001b[?1000l")
     }
 
-    override fun size(): Pair<Int, Int> = 80 to 24
+    override fun size(): Pair<Int, Int> {
+        return try {
+            val sizeStr = jsGetViewportSize()
+            val parts = sizeStr.split(";")
+            // Simplified: estimating terminal size based on viewport
+            // In a real xterm.js setup, we'd query the terminal object
+            val width = parts[0].toInt() / 10 // roughly
+            val height = parts[1].toInt() / 20 // roughly
+            width to height
+        } catch (e: Exception) {
+            80 to 24
+        }
+    }
 
     private fun parseInput(data: String): BobaEvent {
         if (data.isEmpty()) return BobaEvent.Key(0)
