@@ -12,47 +12,83 @@ class App {
             terminal.setup()
             try {
                 runBlocking {
-                    layoutDemo(terminal)
-                    nestedLayoutDemo(terminal)
-                    mordantDemo(terminal)
-
-                    LoadingIndicator.runLoading("Loading yo!", LoaderStyle.SMALL_GREEN, terminal) {
-                        delay(2000)
+                    // Initial Welcome & Loading
+                    LoadingIndicator.runLoading("Initializing Boba Tea...", LoaderStyle.SMALL_GREEN, terminal) {
+                        delay(1500)
                     }
+                    terminal.clear()
+                    terminal.write(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, color = ConsoleColors.CYAN, padding = 1).render() + "\n")
+                    delay(1500)
 
-                    terminal.write(Box("Welcome to Boba Tea!", borderStyle = BorderStyle.ROUNDED, color = ConsoleColors.CYAN).render() + "\n")
-                    delay(2000)
-
-                    ExpandableComponent(
-                        title = "Click me to see something cool!",
-                        content = Box(
-                            "You expanded the section!\nThis is a box inside an expandable component.",
-                            borderStyle = BorderStyle.DOUBLE,
-                            color = ConsoleColors.GREEN
-                        ).render()
-                    ).interact(terminal)
-
-                    coordinates(terminal)
-
-                    val selection = SelectionList(
-                        question = "What's your favourite number?",
-                        options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"),
-                    ).interact(terminal)
-                    terminal.write("You selected: $selection\n")
-
-                    val multiSelections = MultiSelectionList(
-                        question = "What are all your favourite numbers?",
-                        options = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"),
-                    ).interact(terminal)
-                    terminal.write("You selected: $multiSelections\n")
+                    mainMenu(terminal)
                 }
             } finally {
                 terminal.teardown()
             }
         }
 
+        private suspend fun mainMenu(terminal: Terminal) {
+            val options = listOf(
+                "Layout Demo",
+                "Nested Layout Demo",
+                "Mordant Components (MD, Tables, Links)",
+                "Expandable Section",
+                "Coordinates Exploration",
+                "Single Selection List",
+                "Multi-Selection List",
+                "Exit"
+            )
+
+            while (true) {
+                terminal.clear()
+                val (width, height) = terminal.size()
+
+                val selection = SelectionList(
+                    question = "Boba Tea Main Menu - Choose a screen:",
+                    options = options,
+                    borderStyle = BorderStyle.SINGLE,
+                    padding = 1,
+                    color = ConsoleColors.CYAN,
+                    width = Dimension.Fixed(minOf(width, 50))
+                ).interact(terminal)
+
+                when (selection) {
+                    "Layout Demo" -> layoutDemo(terminal)
+                    "Nested Layout Demo" -> nestedLayoutDemo(terminal)
+                    "Mordant Components (MD, Tables, Links)" -> mordantDemo(terminal)
+                    "Expandable Section" -> expandableDemo(terminal)
+                    "Coordinates Exploration" -> coordinates(terminal)
+                    "Single Selection List" -> singleSelectDemo(terminal)
+                    "Multi-Selection List" -> multiSelectDemo(terminal)
+                    "Exit" -> return
+                }
+            }
+        }
+
+        private suspend fun renderWithBack(terminal: Terminal, component: BobaComponent) {
+            val (width, height) = terminal.size()
+            val back = BackButton(margin = 1)
+
+            fun renderAll() {
+                terminal.clear()
+                terminal.write(component.render(width, height) + "\n")
+                terminal.write(back.render(width, height) + "\n")
+            }
+
+            renderAll()
+            terminal.enableMouseTracking(allMotion = true)
+            try {
+                while (true) {
+                    val event = terminal.readEvent()
+                    if (event is BobaEvent.Key && (event.code == 'q'.code || event.code == 'Q'.code)) return
+                    if (event is BobaEvent.Mouse && back.isClicked(event, height - 3)) return
+                }
+            } finally {
+                terminal.disableMouseTracking()
+            }
+        }
+
         private suspend fun nestedLayoutDemo(terminal: Terminal) {
-            terminal.clear()
             val (width, height) = terminal.size()
 
             val box1 = Box("Box 1.1\nCol 1", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
@@ -87,25 +123,16 @@ class App {
                 borderStyle = BorderStyle.DOUBLE
             )
 
-            terminal.write(root.render(width, height) + "\n")
-            terminal.write("\nPress any key to continue...")
-            terminal.readEvent()
+            renderWithBack(terminal, root)
         }
 
         private suspend fun layoutDemo(terminal: Terminal) {
-            terminal.clear()
             val (width, height) = terminal.size()
-
             val root = buildDemoLayout(width)
-
-            terminal.write(root.render(width, height) + "\n")
-
-            terminal.write("\nPress any key to continue...")
-            terminal.readEvent()
+            renderWithBack(terminal, root)
         }
 
         private suspend fun mordantDemo(terminal: Terminal) {
-            terminal.clear()
             val (width, height) = terminal.size()
 
             val md = Markdown("# Mordant Components\nThis screen showcases components powered by Mordant.")
@@ -119,9 +146,47 @@ class App {
                 width = Dimension.Fixed(minOf(width, 60))
             )
 
-            terminal.write(stack.render(width, height) + "\n")
-            terminal.write("\nPress any key to continue to the original demo...")
-            terminal.readEvent()
+            renderWithBack(terminal, stack)
+        }
+
+        private suspend fun expandableDemo(terminal: Terminal) {
+            ExpandableComponent(
+                title = "Expandable Demo (Click or Space/Enter)",
+                content = Box(
+                    "You expanded the section!\nThis is a box inside an expandable component.",
+                    borderStyle = BorderStyle.DOUBLE,
+                    color = ConsoleColors.GREEN
+                ).render(),
+                padding = 1,
+                borderStyle = BorderStyle.ROUNDED,
+                color = ConsoleColors.BLUE
+            ).interact(terminal)
+        }
+
+        private suspend fun singleSelectDemo(terminal: Terminal) {
+            val selection = SelectionList(
+                question = "Single Selection Demo:",
+                options = listOf("Option A", "Option B", "Option C", "Go Back"),
+                padding = 1,
+                borderStyle = BorderStyle.SINGLE,
+                color = ConsoleColors.YELLOW
+            ).interact(terminal)
+            if (selection != "Go Back") {
+                terminal.write("You selected: $selection\n")
+                delay(1000)
+            }
+        }
+
+        private suspend fun multiSelectDemo(terminal: Terminal) {
+            val multiSelections = MultiSelectionList(
+                question = "Multi Selection Demo (Space to toggle, Enter to confirm):",
+                options = listOf("Red", "Green", "Blue", "Cyan", "Yellow"),
+                padding = 1,
+                borderStyle = BorderStyle.DOUBLE,
+                color = ConsoleColors.PURPLE
+            ).interact(terminal)
+            terminal.write("You selected: $multiSelections\n")
+            delay(1500)
         }
 
         private suspend fun coordinates(terminal: Terminal) {
@@ -161,6 +226,7 @@ class App {
                     else if (KeyCodes.isUp(event.code)) renderPos(x, --y)
                     else if (KeyCodes.isLeft(event.code)) renderPos(--x, y)
                     else if (KeyCodes.isRight(event.code)) renderPos(++x, y)
+                    else if (event.code == 'q'.code || event.code == 'Q'.code) return
                     else if (event.code == KeyCodes.ENTER.key || event.code == KeyCodes.SPACE.key) return
                 }
             }
