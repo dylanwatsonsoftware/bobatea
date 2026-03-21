@@ -15,7 +15,8 @@ class MultiSelectionList(
     override var width: Dimension = Dimension.Auto,
     override var maxWidth: Dimension = Dimension.Auto,
     override var height: Dimension = Dimension.Auto,
-    override var maxHeight: Dimension = Dimension.Auto
+    override var maxHeight: Dimension = Dimension.Auto,
+    val onComplete: (Set<String>) -> Unit = {}
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
     var currentIndex = 0
     val selected = mutableSetOf<String>()
@@ -49,60 +50,48 @@ class MultiSelectionList(
         content.append("Press ${green("SPACE")} to toggle selection\n")
         content.append("${green("ENTER")} or ${green("Q")} to confirm")
 
-        return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val result = wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val lines = result.lines()
+        widthPx = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        heightPx = lines.size
+        return result
     }
 
-    suspend fun interact(terminal: Terminal): MutableSet<String> {
-        val (availableWidth, availableHeight) = terminal.size()
-        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 // +1 for the question line
-
-        fun printList() {
-            terminal.clear()
-            terminal.write(render(availableWidth, availableHeight) + "\n")
-        }
-
-        printList()
-
-        terminal.enableMouseTracking()
-        try {
-            while (true) {
-                when (val event = terminal.readEvent()) {
-                    is BobaEvent.Key -> {
-                        when {
-                            KeyCodes.isUp(event.code) -> {
-                                currentIndex = (currentIndex - 1 + options.size) % options.size
-                                printList()
-                            }
-                            KeyCodes.isDown(event.code) -> {
-                                currentIndex = (currentIndex + 1) % options.size
-                                printList()
-                            }
-                            event.code == SPACE.key -> {
-                                toggle(currentIndex)
-                                printList()
-                            }
-                            event.code == ENTER.key || event.code == 'q'.code || event.code == 'Q'.code -> {
-                                currentIndex = -1
-                                printList()
-                                return selected
-                            }
-                        }
+    override fun onEvent(event: BobaEvent): Boolean {
+        when (event) {
+            is BobaEvent.Key -> {
+                when {
+                    KeyCodes.isUp(event.code) -> {
+                        currentIndex = (currentIndex - 1 + options.size) % options.size
+                        return true
                     }
-                    is BobaEvent.Mouse -> {
-                        if (event.action == MouseAction.PRESS) {
-                            val clickedIndex = event.y - startLine
-                            if (clickedIndex in options.indices) {
-                                currentIndex = clickedIndex
-                                toggle(currentIndex)
-                                printList()
-                            }
-                        }
+                    KeyCodes.isDown(event.code) -> {
+                        currentIndex = (currentIndex + 1) % options.size
+                        return true
+                    }
+                    event.code == SPACE.key -> {
+                        toggle(currentIndex)
+                        return true
+                    }
+                    event.code == ENTER.key || event.code == 'q'.code || event.code == 'Q'.code -> {
+                        onComplete(selected)
+                        return true
                     }
                 }
             }
-        } finally {
-            terminal.disableMouseTracking()
+            is BobaEvent.Mouse -> {
+                if (event.action == MouseAction.PRESS) {
+                    val startLine = y + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1
+                    val clickedIndex = event.y - startLine
+                    if (clickedIndex in options.indices) {
+                        currentIndex = clickedIndex
+                        toggle(currentIndex)
+                        return true
+                    }
+                }
+            }
         }
+        return false
     }
 
     private fun toggle(index: Int) {

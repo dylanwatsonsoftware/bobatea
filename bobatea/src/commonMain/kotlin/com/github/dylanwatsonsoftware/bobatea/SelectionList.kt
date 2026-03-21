@@ -1,7 +1,6 @@
 package com.github.dylanwatsonsoftware.bobatea
 
-import com.github.ajalt.mordant.rendering.TextColors.green
-import com.github.ajalt.mordant.rendering.TextColors.yellow
+import com.github.ajalt.mordant.rendering.TextColors
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.ENTER
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes.SPACE
 
@@ -15,80 +14,70 @@ class SelectionList(
     override var width: Dimension = Dimension.Auto,
     override var maxWidth: Dimension = Dimension.Auto,
     override var height: Dimension = Dimension.Auto,
-    override var maxHeight: Dimension = Dimension.Auto
+    override var maxHeight: Dimension = Dimension.Auto,
+    val onSelect: (String) -> Unit = {}
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
     var currentIndex = 0
+    private val pink = TextColors.rgb("#F179B4")
+    private val bobaCyan = TextColors.rgb("#00D7FF")
+    private val gray = TextColors.rgb("#808080")
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val content = StringBuilder()
-        content.append(green(question)).append("\n")
+        content.append(pink(question)).append("\n\n")
         options.forEachIndexed { index, item ->
             if (index == currentIndex) {
-                content.append(yellow("❯ $item")).append("\n")
+                content.append(bobaCyan("❯ $item")).append("\n")
             } else {
                 content.append("  $item").append("\n")
             }
         }
         content.append("\n")
-        content.append("Use ${green("UP/DOWN")} or ${green("W/S")} keys to choose.\n")
-        content.append("${green("SPACE/ENTER")} or ${green("Q")} to confirm")
+        content.append(gray("Use UP/DOWN or W/S keys to choose.\n"))
+        content.append(gray("SPACE/ENTER or Q to confirm"))
 
-        return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val result = wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val lines = result.lines()
+        widthPx = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        heightPx = lines.size
+        return result
     }
 
-    suspend fun interact(terminal: Terminal): String {
-        val (availableWidth, availableHeight) = terminal.size()
-        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 // +1 for the question line
-
-        fun printList() {
-            terminal.clear()
-            terminal.write(render(availableWidth, availableHeight) + "\n")
-        }
-
-        printList()
-
-        terminal.enableMouseTracking()
-        try {
-            while (true) {
-                when (val event = terminal.readEvent()) {
-                    is BobaEvent.Key -> {
-                        when {
-                            KeyCodes.isUp(event.code) -> {
-                                currentIndex = (currentIndex - 1 + options.size) % options.size
-                                printList()
-                            }
-                            KeyCodes.isDown(event.code) -> {
-                                currentIndex = (currentIndex + 1) % options.size
-                                printList()
-                            }
-                            event.code == ENTER.key || event.code == SPACE.key || event.code == 'q'.code || event.code == 'Q'.code -> {
-                                val selected = options[currentIndex]
-                                currentIndex = -1
-                                printList()
-                                return selected
-                            }
-                        }
+    override fun onEvent(event: BobaEvent): Boolean {
+        when (event) {
+            is BobaEvent.Key -> {
+                when {
+                    KeyCodes.isUp(event.code) -> {
+                        currentIndex = (currentIndex - 1 + options.size) % options.size
+                        return true
                     }
-                    is BobaEvent.Mouse -> {
-                        if (event.action == MouseAction.PRESS) {
-                            val clickedIndex = event.y - startLine
-                            if (clickedIndex in options.indices) {
-                                if (clickedIndex == currentIndex) {
-                                    val selected = options[currentIndex]
-                                    currentIndex = -1
-                                    printList()
-                                    return selected
-                                } else {
-                                    currentIndex = clickedIndex
-                                    printList()
-                                }
-                            }
-                        }
+                    KeyCodes.isDown(event.code) -> {
+                        currentIndex = (currentIndex + 1) % options.size
+                        return true
+                    }
+                    event.code == ENTER.key || event.code == SPACE.key || event.code == 'q'.code || event.code == 'Q'.code -> {
+                        val selected = options[currentIndex]
+                        onSelect(selected)
+                        return true
                     }
                 }
             }
-        } finally {
-            terminal.disableMouseTracking()
+            is BobaEvent.Mouse -> {
+                if (event.action == MouseAction.PRESS) {
+                    val startLine = this.y + (if (this.borderStyle != BorderStyle.NONE) 1 else 0) + this.padding + 2
+                    val clickedIndex = event.y - startLine
+                    if (clickedIndex in options.indices) {
+                        if (clickedIndex == currentIndex) {
+                            val selected = options[currentIndex]
+                            onSelect(selected)
+                        } else {
+                            currentIndex = clickedIndex
+                        }
+                        return true
+                    }
+                }
+            }
         }
+        return false
     }
 }

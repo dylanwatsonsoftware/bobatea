@@ -6,7 +6,7 @@ interface Terminal {
     val mordant: MordantTerminal
     fun write(text: String)
     fun clear()
-    suspend fun readEvent(): BobaEvent
+    suspend fun readEvent(timeoutMs: Long = 100): BobaEvent?
     fun enableMouseTracking(allMotion: Boolean = false)
     fun disableMouseTracking()
     fun size(): Pair<Int, Int> = 80 to 24

@@ -46,8 +46,8 @@ class JvmTerminal(
         }
     }
 
-    override suspend fun readEvent(): BobaEvent = withContext(Dispatchers.IO) {
-        readEventBlocking()
+    override suspend fun readEvent(timeoutMs: Long): BobaEvent? = withContext(Dispatchers.IO) {
+        readEventWithTimeout(timeoutMs)
     }
 
     override fun enableMouseTracking(allMotion: Boolean) {
@@ -77,6 +77,17 @@ class JvmTerminal(
             val read = System.`in`.read()
             if (read != -1) return read
         }
+    }
+
+    private fun readEventWithTimeout(timeoutMs: Long): BobaEvent? {
+        val startTime = System.currentTimeMillis()
+        while (System.`in`.available() == 0) {
+            if (System.currentTimeMillis() - startTime >= timeoutMs) {
+                return null
+            }
+            Thread.sleep(10)
+        }
+        return readEventBlocking()
     }
 
     private fun readEventBlocking(): BobaEvent {
