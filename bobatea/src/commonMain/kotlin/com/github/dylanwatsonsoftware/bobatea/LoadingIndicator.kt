@@ -1,5 +1,9 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -100,20 +104,20 @@ fun infiniteRange(range: IntRange): Sequence<Int> = sequence {
 }
 
 enum class TerminalColors(val value: String) {
-    RESET("\u001B[0m"),
-    BLACK("\u001B[30m"),
-    RED("\u001B[31m"),
-    GREEN("\u001B[32m"),
-    YELLOW("\u001B[33m"),
-    BLUE("\u001B[34m"),
-    PURPLE("\u001B[35m"),
-    CYAN("\u001B[36m"),
-    WHITE("\u001B[37m"),
+    RESET(ConsoleColors.RESET),
+    BLACK(ConsoleColors.BLACK),
+    RED(ConsoleColors.RED),
+    GREEN(ConsoleColors.GREEN),
+    YELLOW(ConsoleColors.YELLOW),
+    BLUE(ConsoleColors.BLUE),
+    PURPLE(ConsoleColors.PURPLE),
+    CYAN(ConsoleColors.CYAN),
+    WHITE(ConsoleColors.WHITE),
 }
 
 enum class Formatting(val value: String) {
-    BOLD("\u001B[1m"),
-    UNDERLINE("\u001B[4m"),
+    BOLD(ConsoleColors.WHITE_BOLD),
+    UNDERLINE(ConsoleColors.WHITE_UNDERLINED),
 }
 
 enum class CursorMovement(val value: String) {
@@ -128,15 +132,15 @@ fun clearLine() = CursorMovement.CLEAR_LINE.value
 
 fun colour(txt: String, with: TerminalColors): String = "${with.value}${txt}${TerminalColors.RESET.value}"
 
-fun red(text: String): String = colour(text, with = TerminalColors.RED)
-fun green(text: String): String = colour(text, with = TerminalColors.GREEN)
-fun blue(text: String): String = colour(text, with = TerminalColors.BLUE)
-fun black(text: String): String = colour(text, with = TerminalColors.BLACK)
-fun yellow(text: String): String = colour(text, with = TerminalColors.YELLOW)
-fun purple(text: String): String = colour(text, with = TerminalColors.PURPLE)
-fun cyan(text: String): String = colour(text, with = TerminalColors.CYAN)
-fun white(text: String): String = colour(text, with = TerminalColors.WHITE)
+fun red(text: String): String = ConsoleColors.color(text, ConsoleColors.RED)
+fun green(text: String): String = ConsoleColors.color(text, ConsoleColors.GREEN)
+fun blue(text: String): String = ConsoleColors.color(text, ConsoleColors.BLUE)
+fun black(text: String): String = ConsoleColors.color(text, ConsoleColors.BLACK)
+fun yellow(text: String): String = ConsoleColors.color(text, ConsoleColors.YELLOW)
+fun purple(text: String): String = ConsoleColors.color(text, ConsoleColors.PURPLE)
+fun cyan(text: String): String = ConsoleColors.color(text, ConsoleColors.CYAN)
+fun white(text: String): String = ConsoleColors.color(text, ConsoleColors.WHITE)
 
-fun bold(text: String): String = "${Formatting.BOLD.value}${text}${TerminalColors.RESET.value}"
-fun underline(text: String): String = "${Formatting.UNDERLINE.value}${text}${TerminalColors.RESET.value}"
+fun bold(text: String): String = ConsoleColors.color(text, ConsoleColors.WHITE_BOLD)
+fun underline(text: String): String = ConsoleColors.color(text, ConsoleColors.WHITE_UNDERLINED)
 fun createPen(penColor: TerminalColors?): (String) -> String = { if (penColor != null) colour(it, with = penColor) else it }

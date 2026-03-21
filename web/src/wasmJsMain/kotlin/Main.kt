@@ -112,6 +112,23 @@ fun main() {
         terminal.write(root.render(60, 24) + "\n")
         delay(4000)
 
+        // 8. Markdown & Table
+        terminal.write("${color("Step 7: New Mordant Components", CYAN)}\n")
+        val md = Markdown("# Markdown Support\nThis is rendered using **Mordant**.")
+        val link = Link("Visit Mordant GitHub", "https://github.com/ajalt/mordant")
+        val stack = Stack(
+            children = listOf(md, link),
+            borderStyle = BorderStyle.DOUBLE,
+            padding = 1,
+            color = CYAN,
+            width = Dimension.Fixed(55)
+        )
+        terminal.write(stack.render(60) + "\n")
+
+        val tbl = Table(listOf("A", "B"), listOf(listOf("1", "2"), listOf("3", "4")))
+        terminal.write(tbl.render(60) + "\n")
+        delay(4000)
+
         terminal.write("\n" + color("Demo Complete! Scroll down to see more examples.", GREEN) + "\n")
     }
 }

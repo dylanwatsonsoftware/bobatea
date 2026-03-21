@@ -8,6 +8,7 @@ plugins {
 dependencies {
     implementation(project(":$releaseArtifact"))
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.mordant)
 }
 
 application {

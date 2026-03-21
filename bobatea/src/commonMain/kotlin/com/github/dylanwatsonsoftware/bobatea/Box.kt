@@ -1,20 +1,19 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.BorderType
+import com.github.ajalt.mordant.rendering.TextStyle
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
+import com.github.ajalt.mordant.widgets.Panel
+import com.github.ajalt.mordant.widgets.Text
+import com.github.ajalt.mordant.widgets.withPadding
 import kotlin.math.max
 import kotlin.math.min
 
-enum class BorderStyle(
-    val topLeft: Char,
-    val topRight: Char,
-    val bottomLeft: Char,
-    val bottomRight: Char,
-    val horizontal: Char,
-    val vertical: Char
-) {
-    SINGLE('┌', '┐', '└', '┘', '─', '│'),
-    DOUBLE('╔', '╗', '╚', '╝', '═', '║'),
-    ROUNDED('╭', '╮', '╰', '╯', '─', '│'),
-    NONE(' ', ' ', ' ', ' ', ' ', ' ')
+enum class BorderStyle(val mordant: BorderType) {
+    SINGLE(BorderType.SQUARE),
+    DOUBLE(BorderType.DOUBLE),
+    ROUNDED(BorderType.ROUNDED),
+    NONE(BorderType.BLANK)
 }
 
 class Box(
@@ -30,125 +29,81 @@ class Box(
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
-        val lines = content.lines()
-        val contentWidth = lines.maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0
-        val contentHeight = lines.size
-
         val resolvedWidth = BobaComponent.resolveDimension(width, availableWidth)
         val resolvedMaxWidth = BobaComponent.resolveDimension(maxWidth, availableWidth)
         val resolvedHeight = BobaComponent.resolveDimension(height, availableHeight)
         val resolvedMaxHeight = BobaComponent.resolveDimension(maxHeight, availableHeight)
 
-        val borderSize = if (borderStyle != BorderStyle.NONE) 2 else 0
-        val horizontalTotal = padding * 2 + borderSize
-        val verticalTotal = padding * 2 + borderSize
+        var widget = Text(content).withPadding(padding)
 
-        var finalWidth = resolvedWidth ?: (contentWidth + horizontalTotal)
-        resolvedMaxWidth?.let { finalWidth = min(finalWidth, it) }
-        finalWidth = max(finalWidth, horizontalTotal)
+        val border = if (borderStyle == BorderStyle.NONE && padding == 0) null else borderStyle.mordant
+        val panel = Panel(
+            content = widget,
+            borderType = border,
+            expand = resolvedWidth != null || width is Dimension.Percent
+        )
 
-        var finalHeight = resolvedHeight ?: (contentHeight + verticalTotal)
-        resolvedMaxHeight?.let { finalHeight = min(finalHeight, it) }
-        finalHeight = max(finalHeight, verticalTotal)
-
-        val innerWidth = max(0, finalWidth - horizontalTotal)
-        val innerHeight = max(0, finalHeight - verticalTotal)
+        val renderWidth = resolvedWidth ?: availableWidth ?: 80
 
         val result = StringBuilder()
-
-        // Top margin
+        // We use a prefix to protect margins from being trimmed
+        result.append("MARGIN_START")
         repeat(margin) { result.append("\n") }
 
-        if (borderStyle != BorderStyle.NONE) {
-            // Top border
-            result.append(" ".repeat(margin))
-            result.append(borderStyle.topLeft)
-            result.append(borderStyle.horizontal.toString().repeat(innerWidth + padding * 2))
-            result.append(borderStyle.topRight)
-            result.append("\n")
+        // Handle dimensions via Mordant's render if possible, or manual wrapping
+        // For now, let's use dummyTerminal to render it to string
+        val rendered = getMordant().render(panel, width = renderWidth)
+
+        // Manual cropping/sizing if needed
+        val lines = rendered.lines()
+        var finalLines = lines
+
+        resolvedHeight?.let { h ->
+            finalLines = finalLines.take(h)
+        }
+        resolvedMaxHeight?.let { h ->
+            finalLines = finalLines.take(min(finalLines.size, h))
         }
 
-        // Top padding
-        repeat(padding) {
-            result.append(" ".repeat(margin))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append(" ".repeat(innerWidth + padding * 2))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append("\n")
-        }
-
-        // Content
-        for (i in 0 until innerHeight) {
-            result.append(" ".repeat(margin))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append(" ".repeat(padding))
-
-            if (i < lines.size) {
-                val line = lines[i]
-                val vLen = BobaComponent.visibleLength(line)
-                if (vLen <= innerWidth) {
-                    result.append(line)
-                    result.append(" ".repeat(innerWidth - vLen))
-                } else {
-                    // Truncate line if it's too long
-                    // This is tricky with ANSI codes, but for now simple truncation
-                    // A better way would be to truncate the visible part
-                    var currentVisible = 0
-                    val truncated = StringBuilder()
-                    var j = 0
-                    var hasOpenAnsi = false
-                    while (j < line.length && currentVisible < innerWidth) {
-                        if (line[j] == '\u001b') {
-                            val match = BobaComponent.ANSI_REGEX.find(line, j)
-                            if (match != null && match.range.first == j) {
-                                val ansiSeq = match.value
-                                truncated.append(ansiSeq)
-                                hasOpenAnsi = if (ansiSeq == ConsoleColors.RESET) false else true
-                                j = match.range.last + 1
-                                continue
+        finalLines.forEach { line ->
+            var finalLine = line
+            if (finalLine.isNotBlank() || borderStyle != BorderStyle.NONE) {
+                result.append(" ".repeat(margin))
+                resolvedWidth?.let { w ->
+                    val vLen = BobaComponent.visibleLength(finalLine)
+                    if (vLen > w) {
+                        // Truncate visible part correctly
+                        var currentVisible = 0
+                        val truncated = StringBuilder()
+                        var j = 0
+                        while (j < finalLine.length && currentVisible < w) {
+                            if (finalLine[j] == '\u001b') {
+                                val match = BobaComponent.ANSI_REGEX.find(finalLine, j)
+                                if (match != null && match.range.first == j) {
+                                    truncated.append(match.value)
+                                    j = match.range.last + 1
+                                    continue
+                                }
                             }
+                            truncated.append(finalLine[j])
+                            currentVisible++
+                            j++
                         }
-                        truncated.append(line[j])
-                        currentVisible++
-                        j++
+                        finalLine = truncated.toString()
                     }
-                    if (hasOpenAnsi) {
-                        truncated.append(ConsoleColors.RESET)
-                    }
-                    result.append(truncated.toString())
                 }
-            } else {
-                result.append(" ".repeat(innerWidth))
+                result.append(finalLine).append("\n")
             }
-
-            result.append(" ".repeat(padding))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append("\n")
         }
 
-        // Bottom padding
-        repeat(padding) {
-            result.append(" ".repeat(margin))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append(" ".repeat(innerWidth + padding * 2))
-            if (borderStyle != BorderStyle.NONE) result.append(borderStyle.vertical)
-            result.append("\n")
-        }
-
-        if (borderStyle != BorderStyle.NONE) {
-            // Bottom border
-            result.append(" ".repeat(margin))
-            result.append(borderStyle.bottomLeft)
-            result.append(borderStyle.horizontal.toString().repeat(innerWidth + padding * 2))
-            result.append(borderStyle.bottomRight)
-            result.append("\n")
-        }
-
-        // Bottom margin
         repeat(margin) { result.append("\n") }
+        result.append("MARGIN_END")
 
-        val rendered = result.toString().trimEnd('\n')
-        return if (color != null) ConsoleColors.color(rendered, color!!) else rendered
+        val output = result.toString()
+            .removePrefix("MARGIN_START")
+            .removeSuffix("MARGIN_END")
+            .trimEnd('\n')
+        return if (color != null) "$color$output${ConsoleColors.RESET}" else output
     }
 
     override fun toString(): String = render()

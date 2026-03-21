@@ -1,80 +1,105 @@
 package com.github.dylanwatsonsoftware.bobatea
 
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.Size
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
+import com.github.ajalt.mordant.terminal.PrintRequest
+import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
+import com.github.ajalt.mordant.terminal.TerminalInfo
+import com.github.ajalt.mordant.terminal.TerminalInterface
+
 class ConsoleColors {
+    private class AnsiTerminalInterface : TerminalInterface {
+        override fun completePrintRequest(request: PrintRequest) {}
+        override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
+            return TerminalInfo(ansiLevel = AnsiLevel.TRUECOLOR, ansiHyperLinks = true, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
+        }
+        override fun getTerminalSize(): Size? = Size(80, 24)
+        override fun readLineOrNull(hideInput: Boolean): String? = null
+    }
+
     companion object {
+        private val dummyTerminal = MordantTerminal(terminalInterface = AnsiTerminalInterface())
+
         fun color(text: String, color: String): String = "$color$text${ConsoleColors.RESET}"
 
+        fun styleToString(style: com.github.ajalt.mordant.rendering.TextStyle): String {
+            val rendered = dummyTerminal.render(style("X"))
+            return rendered.substringBefore("X")
+        }
+
         // Reset
-        const val RESET: String = "\u001b[0m" // Text Reset
+        val RESET: String = "\u001b[0m"
 
         // Regular Colors
-        const val BLACK: String = "\u001b[0;30m" // BLACK
-        const val RED: String = "\u001b[0;31m" // RED
-        const val GREEN: String = "\u001b[0;32m" // GREEN
-        const val YELLOW: String = "\u001b[0;33m" // YELLOW
-        const val BLUE: String = "\u001b[0;34m" // BLUE
-        const val PURPLE: String = "\u001b[0;35m" // PURPLE
-        const val CYAN: String = "\u001b[0;36m" // CYAN
-        const val WHITE: String = "\u001b[0;37m" // WHITE
+        val BLACK: String = styleToString(TextColors.black)
+        val RED: String = styleToString(TextColors.red)
+        val GREEN: String = styleToString(TextColors.green)
+        val YELLOW: String = styleToString(TextColors.yellow)
+        val BLUE: String = styleToString(TextColors.blue)
+        val PURPLE: String = styleToString(TextColors.magenta)
+        val CYAN: String = styleToString(TextColors.cyan)
+        val WHITE: String = styleToString(TextColors.white)
 
         // Bold
-        const val BLACK_BOLD: String = "\u001b[1;30m" // BLACK
-        const val RED_BOLD: String = "\u001b[1;31m" // RED
-        const val GREEN_BOLD: String = "\u001b[1;32m" // GREEN
-        const val YELLOW_BOLD: String = "\u001b[1;33m" // YELLOW
-        const val BLUE_BOLD: String = "\u001b[1;34m" // BLUE
-        const val PURPLE_BOLD: String = "\u001b[1;35m" // PURPLE
-        const val CYAN_BOLD: String = "\u001b[1;36m" // CYAN
-        const val WHITE_BOLD: String = "\u001b[1;37m" // WHITE
+        val BLACK_BOLD: String = styleToString(TextColors.black + TextStyles.bold)
+        val RED_BOLD: String = styleToString(TextColors.red + TextStyles.bold)
+        val GREEN_BOLD: String = styleToString(TextColors.green + TextStyles.bold)
+        val YELLOW_BOLD: String = styleToString(TextColors.yellow + TextStyles.bold)
+        val BLUE_BOLD: String = styleToString(TextColors.blue + TextStyles.bold)
+        val PURPLE_BOLD: String = styleToString(TextColors.magenta + TextStyles.bold)
+        val CYAN_BOLD: String = styleToString(TextColors.cyan + TextStyles.bold)
+        val WHITE_BOLD: String = styleToString(TextColors.white + TextStyles.bold)
 
         // Underline
-        const val BLACK_UNDERLINED: String = "\u001b[4;30m" // BLACK
-        const val RED_UNDERLINED: String = "\u001b[4;31m" // RED
-        const val GREEN_UNDERLINED: String = "\u001b[4;32m" // GREEN
-        const val YELLOW_UNDERLINED: String = "\u001b[4;33m" // YELLOW
-        const val BLUE_UNDERLINED: String = "\u001b[4;34m" // BLUE
-        const val PURPLE_UNDERLINED: String = "\u001b[4;35m" // PURPLE
-        const val CYAN_UNDERLINED: String = "\u001b[4;36m" // CYAN
-        const val WHITE_UNDERLINED: String = "\u001b[4;37m" // WHITE
+        val BLACK_UNDERLINED: String = styleToString(TextColors.black + TextStyles.underline)
+        val RED_UNDERLINED: String = styleToString(TextColors.red + TextStyles.underline)
+        val GREEN_UNDERLINED: String = styleToString(TextColors.green + TextStyles.underline)
+        val YELLOW_UNDERLINED: String = styleToString(TextColors.yellow + TextStyles.underline)
+        val BLUE_UNDERLINED: String = styleToString(TextColors.blue + TextStyles.underline)
+        val PURPLE_UNDERLINED: String = styleToString(TextColors.magenta + TextStyles.underline)
+        val CYAN_UNDERLINED: String = styleToString(TextColors.cyan + TextStyles.underline)
+        val WHITE_UNDERLINED: String = styleToString(TextColors.white + TextStyles.underline)
 
         // Background
-        const val BLACK_BACKGROUND: String = "\u001b[40m" // BLACK
-        const val RED_BACKGROUND: String = "\u001b[41m" // RED
-        const val GREEN_BACKGROUND: String = "\u001b[42m" // GREEN
-        const val YELLOW_BACKGROUND: String = "\u001b[43m" // YELLOW
-        const val BLUE_BACKGROUND: String = "\u001b[44m" // BLUE
-        const val PURPLE_BACKGROUND: String = "\u001b[45m" // PURPLE
-        const val CYAN_BACKGROUND: String = "\u001b[46m" // CYAN
-        const val WHITE_BACKGROUND: String = "\u001b[47m" // WHITE
+        val BLACK_BACKGROUND: String = styleToString(TextColors.black.bg)
+        val RED_BACKGROUND: String = styleToString(TextColors.red.bg)
+        val GREEN_BACKGROUND: String = styleToString(TextColors.green.bg)
+        val YELLOW_BACKGROUND: String = styleToString(TextColors.yellow.bg)
+        val BLUE_BACKGROUND: String = styleToString(TextColors.blue.bg)
+        val PURPLE_BACKGROUND: String = styleToString(TextColors.magenta.bg)
+        val CYAN_BACKGROUND: String = styleToString(TextColors.cyan.bg)
+        val WHITE_BACKGROUND: String = styleToString(TextColors.white.bg)
 
         // High Intensity
-        const val BLACK_BRIGHT: String = "\u001b[0;90m" // BLACK
-        const val RED_BRIGHT: String = "\u001b[0;91m" // RED
-        const val GREEN_BRIGHT: String = "\u001b[0;92m" // GREEN
-        const val YELLOW_BRIGHT: String = "\u001b[0;93m" // YELLOW
-        const val BLUE_BRIGHT: String = "\u001b[0;94m" // BLUE
-        const val PURPLE_BRIGHT: String = "\u001b[0;95m" // PURPLE
-        const val CYAN_BRIGHT: String = "\u001b[0;96m" // CYAN
-        const val WHITE_BRIGHT: String = "\u001b[0;97m" // WHITE
+        val BLACK_BRIGHT: String = styleToString(TextColors.gray)
+        val RED_BRIGHT: String = styleToString(TextColors.brightRed)
+        val GREEN_BRIGHT: String = styleToString(TextColors.brightGreen)
+        val YELLOW_BRIGHT: String = styleToString(TextColors.brightYellow)
+        val BLUE_BRIGHT: String = styleToString(TextColors.brightBlue)
+        val PURPLE_BRIGHT: String = styleToString(TextColors.brightMagenta)
+        val CYAN_BRIGHT: String = styleToString(TextColors.brightCyan)
+        val WHITE_BRIGHT: String = styleToString(TextColors.brightWhite)
 
         // Bold High Intensity
-        const val BLACK_BOLD_BRIGHT: String = "\u001b[1;90m" // BLACK
-        const val RED_BOLD_BRIGHT: String = "\u001b[1;91m" // RED
-        const val GREEN_BOLD_BRIGHT: String = "\u001b[1;92m" // GREEN
-        const val YELLOW_BOLD_BRIGHT: String = "\u001b[1;93m" // YELLOW
-        const val BLUE_BOLD_BRIGHT: String = "\u001b[1;94m" // BLUE
-        const val PURPLE_BOLD_BRIGHT: String = "\u001b[1;95m" // PURPLE
-        const val CYAN_BOLD_BRIGHT: String = "\u001b[1;96m" // CYAN
-        const val WHITE_BOLD_BRIGHT: String = "\u001b[1;97m" // WHITE
+        val BLACK_BOLD_BRIGHT: String = styleToString(TextColors.gray + TextStyles.bold)
+        val RED_BOLD_BRIGHT: String = styleToString(TextColors.brightRed + TextStyles.bold)
+        val GREEN_BOLD_BRIGHT: String = styleToString(TextColors.brightGreen + TextStyles.bold)
+        val YELLOW_BOLD_BRIGHT: String = styleToString(TextColors.brightYellow + TextStyles.bold)
+        val BLUE_BOLD_BRIGHT: String = styleToString(TextColors.brightBlue + TextStyles.bold)
+        val PURPLE_BOLD_BRIGHT: String = styleToString(TextColors.brightMagenta + TextStyles.bold)
+        val CYAN_BOLD_BRIGHT: String = styleToString(TextColors.brightCyan + TextStyles.bold)
+        val WHITE_BOLD_BRIGHT: String = styleToString(TextColors.brightWhite + TextStyles.bold)
 
         // High Intensity backgrounds
-        const val BLACK_BACKGROUND_BRIGHT: String = "\u001b[0;100m" // BLACK
-        const val RED_BACKGROUND_BRIGHT: String = "\u001b[0;101m" // RED
-        const val GREEN_BACKGROUND_BRIGHT: String = "\u001b[0;102m" // GREEN
-        const val YELLOW_BACKGROUND_BRIGHT: String = "\u001b[0;103m" // YELLOW
-        const val BLUE_BACKGROUND_BRIGHT: String = "\u001b[0;104m" // BLUE
-        const val PURPLE_BACKGROUND_BRIGHT: String = "\u001b[0;105m" // PURPLE
-        const val CYAN_BACKGROUND_BRIGHT: String = "\u001b[0;106m" // CYAN
-        const val WHITE_BACKGROUND_BRIGHT: String = "\u001b[0;107m" // WHITE
+        val BLACK_BACKGROUND_BRIGHT: String = styleToString(TextColors.gray.bg)
+        val RED_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightRed.bg)
+        val GREEN_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightGreen.bg)
+        val YELLOW_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightYellow.bg)
+        val BLUE_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightBlue.bg)
+        val PURPLE_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightMagenta.bg)
+        val CYAN_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightCyan.bg)
+        val WHITE_BACKGROUND_BRIGHT: String = styleToString(TextColors.brightWhite.bg)
     }
 }
