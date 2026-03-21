@@ -6,27 +6,34 @@ class Boba {
     companion object {
         suspend fun run(terminal: Terminal, root: BobaComponent) {
             terminal.clear()
+            terminal.enableMouseTracking(true)
             var lastTick = currentTimeMillis()
 
-            while (true) {
-                val (width, height) = terminal.size()
-                val output = root.render(width, height)
-                terminal.clear()
-                terminal.write(output)
+            // Initialize root coordinates to match terminal 1-based system
+            root.x = 1
+            root.y = 1
 
-                val event = terminal.readEvent(50)
-                if (event != null) {
-                    if (root.onEvent(event)) {
-                        // event handled, maybe we want to force a re-render or something
+            try {
+                while (true) {
+                    val (width, height) = terminal.size()
+                    val output = root.render(width, height)
+                    terminal.clear()
+                    terminal.write(output)
+
+                    val event = terminal.readEvent(50)
+                    if (event != null) {
+                        root.onEvent(event)
                     }
+
+                    val now = currentTimeMillis()
+                    root.tick(now - lastTick)
+                    lastTick = now
+
+                    // Yield to other coroutines
+                    delay(10)
                 }
-
-                val now = currentTimeMillis()
-                root.tick(now - lastTick)
-                lastTick = now
-
-                // Yield to other coroutines
-                delay(10)
+            } finally {
+                terminal.disableMouseTracking()
             }
         }
     }
