@@ -36,6 +36,8 @@ class WasmTerminal : Terminal {
         jsWrite("\u001b[?1000l")
     }
 
+    override fun size(): Pair<Int, Int> = 80 to 24
+
     private fun parseInput(data: String): BobaEvent {
         if (data.isEmpty()) return BobaEvent.Key(0)
 

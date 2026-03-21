@@ -12,11 +12,15 @@ class SelectionList(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var color: String? = null,
+    override var width: Dimension = Dimension.Auto,
+    override var maxWidth: Dimension = Dimension.Auto,
+    override var height: Dimension = Dimension.Auto,
+    override var maxHeight: Dimension = Dimension.Auto
+) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
     var currentIndex = 0
 
-    override fun render(): String {
+    override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val content = StringBuilder()
         content.append(color(question, GREEN)).append("\n")
         options.forEachIndexed { index, item ->
@@ -30,7 +34,7 @@ class SelectionList(
         content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
         content.append("${color("SPACE/ENTER", GREEN)} to confirm")
 
-        return wrapInBox(content.toString().trimEnd('\n'))
+        return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
     }
 
     suspend fun interact(terminal: Terminal): String {

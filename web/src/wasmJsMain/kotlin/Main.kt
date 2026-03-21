@@ -10,6 +10,7 @@ import com.github.dylanwatsonsoftware.bobatea.ExpandableComponent
 import com.github.dylanwatsonsoftware.bobatea.KeyCodes
 import com.github.dylanwatsonsoftware.bobatea.LoaderStyle
 import com.github.dylanwatsonsoftware.bobatea.LoadingIndicator
+import com.github.dylanwatsonsoftware.bobatea.*
 import com.github.dylanwatsonsoftware.bobatea.MultiSelectionList
 import com.github.dylanwatsonsoftware.bobatea.SelectionList
 import com.github.dylanwatsonsoftware.bobatea.WasmTerminal
@@ -73,6 +74,43 @@ fun main() {
         ).interact(terminal)
         terminal.write("You selected: ${multiSelections.joinToString(", ")}\n")
         delay(2000)
+
+        // 7. Nested Layouts
+        terminal.write("${color("Step 6: Complex Nested Layouts", CYAN)}\n")
+        val box1 = Box("Box 1.1\nCol 1", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
+        val box2 = Box("Box 1.2\nCol 2", borderStyle = BorderStyle.DOUBLE, width = Dimension.Fixed(15))
+        val box3 = Box("Box 1.3\nCol 3", borderStyle = BorderStyle.ROUNDED, width = Dimension.Fixed(15))
+
+        val inline1 = Inline(
+            children = listOf(box1, box2, box3),
+            padding = 1,
+            borderStyle = BorderStyle.SINGLE,
+            color = CYAN
+        )
+
+        val box4 = Box("Box 2.1\nCol A", borderStyle = BorderStyle.SINGLE, width = Dimension.Fixed(15))
+        val box5 = Box("Box 2.2\nCol B", borderStyle = BorderStyle.DOUBLE, width = Dimension.Fixed(15))
+        val box6 = Box("Box 2.3\nCol C", borderStyle = BorderStyle.ROUNDED, width = Dimension.Fixed(15))
+
+        val inline2 = Inline(
+            children = listOf(box4, box5, box6),
+            padding = 1,
+            borderStyle = BorderStyle.SINGLE,
+            color = YELLOW
+        )
+
+        val root = Stack(
+            children = listOf(
+                Box("Complex Nested Layout Demo\n(Stack of Inlines of Boxes)", padding = 1, color = GREEN),
+                inline1,
+                inline2
+            ),
+            width = Dimension.Fixed(55),
+            borderStyle = BorderStyle.DOUBLE
+        )
+
+        terminal.write(root.render(60, 24) + "\n")
+        delay(4000)
 
         terminal.write("\n" + color("Demo Complete! Scroll down to see more examples.", GREEN) + "\n")
     }

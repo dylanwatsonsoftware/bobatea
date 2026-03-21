@@ -10,8 +10,12 @@ class LoadingIndicator(
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
-    override var color: String? = null
-) : BobaComponent(padding, margin, borderStyle, color) {
+    override var color: String? = null,
+    override var width: Dimension = Dimension.Auto,
+    override var maxWidth: Dimension = Dimension.Auto,
+    override var height: Dimension = Dimension.Auto,
+    override var maxHeight: Dimension = Dimension.Auto
+) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
     companion object {
         suspend fun <R> runLoading(
             message: String = "",
@@ -28,7 +32,7 @@ class LoadingIndicator(
         }
     }
 
-    override fun render(): String = ""
+    override fun render(availableWidth: Int?, availableHeight: Int?): String = ""
 
     suspend fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: suspend () -> R): R {
         return coroutineScope {
