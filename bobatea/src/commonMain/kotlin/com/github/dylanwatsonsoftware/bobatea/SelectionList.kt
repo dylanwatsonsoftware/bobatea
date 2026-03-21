@@ -38,7 +38,7 @@ class SelectionList(
 
     suspend fun interact(terminal: Terminal): String {
         val (availableWidth, availableHeight) = terminal.size()
-        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
+        val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 // +1 for the question line
 
         fun printList() {
             terminal.clear()
@@ -71,7 +71,7 @@ class SelectionList(
                     }
                     is BobaEvent.Mouse -> {
                         if (event.action == MouseAction.PRESS) {
-                            val clickedIndex = event.y - startLine - 2
+                            val clickedIndex = event.y - startLine
                             if (clickedIndex in options.indices) {
                                 if (clickedIndex == currentIndex) {
                                     val selected = options[currentIndex]

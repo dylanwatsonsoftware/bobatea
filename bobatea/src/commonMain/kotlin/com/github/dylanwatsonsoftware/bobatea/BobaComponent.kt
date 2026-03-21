@@ -21,7 +21,7 @@ abstract class BobaComponent(
     open var maxHeight: Dimension = Dimension.Auto
 ) {
     companion object {
-        val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]")
+        val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]|\u001b\\][^\u0007]*\u0007")
 
         fun visibleLength(s: String): Int {
             return s.replace(ANSI_REGEX, "").length
