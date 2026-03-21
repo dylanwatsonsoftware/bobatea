@@ -37,7 +37,7 @@ class Stack(
             availableWidth?.let { max(0, it - horizontalTotal) }
         }
 
-        val renderedChildren = children.map { it.render(innerAvailableWidth, null) }
+        val renderedChildren = children.map { it.render(innerAvailableWidth, resolvedHeight ?: resolvedMaxHeight) }
         val childrenLines = renderedChildren.flatMap { it.lines() }
 
         val contentWidth = childrenLines.maxOfOrNull { BobaComponent.visibleLength(it) } ?: 0

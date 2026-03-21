@@ -62,7 +62,21 @@ class JvmTerminal : Terminal {
         System.out.flush()
     }
 
-    override fun size(): Pair<Int, Int> = 80 to 24
+    override fun size(): Pair<Int, Int> {
+        return try {
+            val output = stty("size").trim()
+            val parts = output.split(" ")
+            if (parts.size == 2) {
+                val rows = parts[0].toInt()
+                val cols = parts[1].toInt()
+                cols to rows
+            } else {
+                80 to 24
+            }
+        } catch (e: Exception) {
+            80 to 24
+        }
+    }
 
     fun getChar(): Int {
         while (true) {

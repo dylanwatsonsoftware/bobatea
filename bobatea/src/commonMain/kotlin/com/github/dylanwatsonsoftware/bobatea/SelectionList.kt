@@ -32,17 +32,18 @@ class SelectionList(
         }
         content.append("\n")
         content.append("Use ${color("UP/DOWN", GREEN)} or ${color("W/S", GREEN)} keys to choose.\n")
-        content.append("${color("SPACE/ENTER", GREEN)} to confirm")
+        content.append("${color("SPACE/ENTER", GREEN)} or ${color("Q", GREEN)} to confirm")
 
         return wrapInBox(content.toString().trimEnd('\n'), availableWidth, availableHeight)
     }
 
     suspend fun interact(terminal: Terminal): String {
+        val (availableWidth, availableHeight) = terminal.size()
         val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 
         fun printList() {
             terminal.clear()
-            terminal.write(render() + "\n")
+            terminal.write(render(availableWidth, availableHeight) + "\n")
         }
 
         printList()
@@ -61,7 +62,7 @@ class SelectionList(
                                 currentIndex = (currentIndex + 1) % options.size
                                 printList()
                             }
-                            event.code == SPACE.key || event.code == ENTER.key -> {
+                            event.code == ENTER.key || event.code == SPACE.key || event.code == 'q'.code || event.code == 'Q'.code -> {
                                 val selected = options[currentIndex]
                                 currentIndex = -1
                                 printList()

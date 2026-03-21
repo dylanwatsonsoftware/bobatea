@@ -54,11 +54,12 @@ class MultiSelectionList(
     }
 
     suspend fun interact(terminal: Terminal): MutableSet<String> {
+        val (availableWidth, availableHeight) = terminal.size()
         val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 
         fun printList() {
             terminal.clear()
-            terminal.write(render() + "\n")
+            terminal.write(render(availableWidth, availableHeight) + "\n")
         }
 
         printList()
