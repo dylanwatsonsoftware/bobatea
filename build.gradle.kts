@@ -1,4 +1,6 @@
 import com.vanniktech.maven.publish.JavadocJar
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishBasePlugin
@@ -77,4 +79,10 @@ tasks {
     dokkaHtmlMultiModule {
         outputDirectory.set(layout.buildDirectory.dir("dokka/dokka/"))
     }
+}
+
+// Node.js v18 is the last version built against glibc 2.17 (CentOS 7).
+// JitPack's build environment only has glibc 2.17, so v22 (the Kotlin 2.x default) fails.
+plugins.withType<NodeJsRootPlugin> {
+    the<NodeJsRootExtension>().nodeVersion = "18.18.2"
 }
