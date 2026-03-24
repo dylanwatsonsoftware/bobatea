@@ -1,1 +1,4 @@
 jdk: openjdk11
+build:
+  commands:
+    - ./gradlew :bobatea:publishToMavenLocal
