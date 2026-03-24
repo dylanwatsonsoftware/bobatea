@@ -4,8 +4,6 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishBasePlugin
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val developerId: String by project
@@ -17,7 +15,6 @@ val releaseVersion: String by project
 val releaseDescription: String by project
 val releaseUrl: String by project
 
-val jdkVersion = JavaLanguageVersion.of(libs.versions.jdk.get())
 val jreVersion = JavaLanguageVersion.of(libs.versions.jre.get())
 
 plugins {
@@ -33,9 +30,6 @@ allprojects {
 }
 
 subprojects {
-    plugins.withType<KotlinPluginWrapper>().configureEach {
-        the<KotlinJvmProjectExtension>().jvmToolchain(jdkVersion.asInt())
-    }
     plugins.withType<MavenPublishBasePlugin> {
         configure<MavenPublishBaseExtension> {
             configure(KotlinJvm(JavadocJar.Dokka("dokkaJavadoc")))
