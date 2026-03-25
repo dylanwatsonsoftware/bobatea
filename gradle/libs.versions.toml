@@ -16,7 +16,6 @@ pages = "com.hanggrian.pages:0.1"
 # main
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 mordant = { module = "com.github.ajalt.mordant:mordant", version = "2.6.0" }
-mordant-markdown = { module = "com.github.ajalt.mordant:mordant-markdown", version = "2.6.0" }
 
 # test
 truth = "com.google.truth:truth:1.4.4"

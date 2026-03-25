@@ -1,7 +1,6 @@
 package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.ajalt.mordant.rendering.AnsiLevel
-import com.github.ajalt.mordant.rendering.Size
 import com.github.ajalt.mordant.terminal.PrintRequest
 import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import com.github.ajalt.mordant.terminal.TerminalInfo
@@ -27,26 +26,19 @@ class WasmTerminalInterface : TerminalInterface {
         if (request.text.isNotEmpty()) jsWrite(request.text)
     }
 
-    override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
-        return TerminalInfo(
-            ansiLevel = AnsiLevel.TRUECOLOR,
-            ansiHyperLinks = false,
-            outputInteractive = true,
-            inputInteractive = true,
-            supportsAnsiCursor = true
-        )
-    }
-
-    override fun getTerminalSize(): Size? {
-        return try {
+    override val info: TerminalInfo = run {
+        val (w, h) = try {
             val sizeStr = jsGetViewportSize()
             val parts = sizeStr.split(";")
-            val width = parts[0].toInt() / 10
-            val height = parts[1].toInt() / 20
-            Size(width, height)
+            parts[0].toInt() / 10 to parts[1].toInt() / 20
         } catch (e: Exception) {
-            Size(80, 24)
+            80 to 24
         }
+        TerminalInfo(
+            width = w, height = h,
+            ansiLevel = AnsiLevel.TRUECOLOR,
+            ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, crClearsLine = false
+        )
     }
 
     override fun readLineOrNull(hideInput: Boolean): String? = null
@@ -83,8 +75,7 @@ class WasmTerminal(
     }
 
     override fun size(): Pair<Int, Int> {
-        val size = mordant.size
-        return size.width to size.height
+        return mordant.info.width to mordant.info.height
     }
 
     private fun parseInput(data: String): BobaEvent {

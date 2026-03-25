@@ -68,8 +68,7 @@ class JvmTerminal(
     }
 
     override fun size(): Pair<Int, Int> {
-        val size = mordant.size
-        return size.width to size.height
+        return mordant.info.width to mordant.info.height
     }
 
     fun getChar(): Int {

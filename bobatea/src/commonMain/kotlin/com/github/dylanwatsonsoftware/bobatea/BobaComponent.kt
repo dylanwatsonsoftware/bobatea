@@ -29,10 +29,11 @@ abstract class BobaComponent(
 
         private class AnsiTerminalInterface : com.github.ajalt.mordant.terminal.TerminalInterface {
             override fun completePrintRequest(request: com.github.ajalt.mordant.terminal.PrintRequest) {}
-            override fun info(ansiLevel: com.github.ajalt.mordant.rendering.AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): com.github.ajalt.mordant.terminal.TerminalInfo {
-                return com.github.ajalt.mordant.terminal.TerminalInfo(ansiLevel = com.github.ajalt.mordant.rendering.AnsiLevel.TRUECOLOR, ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
-            }
-            override fun getTerminalSize(): com.github.ajalt.mordant.rendering.Size? = com.github.ajalt.mordant.rendering.Size(80, 24)
+            override val info: com.github.ajalt.mordant.terminal.TerminalInfo = com.github.ajalt.mordant.terminal.TerminalInfo(
+                width = 80, height = 24,
+                ansiLevel = com.github.ajalt.mordant.rendering.AnsiLevel.TRUECOLOR,
+                ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, crClearsLine = false
+            )
             override fun readLineOrNull(hideInput: Boolean): String? = null
         }
 

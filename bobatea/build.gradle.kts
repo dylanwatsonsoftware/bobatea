@@ -28,7 +28,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines)
             implementation(libs.mordant)
-            implementation(libs.mordant.markdown)
         }
         jvmTest.dependencies {
             implementation(kotlin("test-junit"))

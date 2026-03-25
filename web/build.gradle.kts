@@ -20,13 +20,13 @@ kotlin {
             }
             binaries.executable()
         }
-    }
 
-    sourceSets {
-        wasmJsMain.dependencies {
-            implementation(project(":$releaseArtifact"))
-            implementation(libs.kotlinx.coroutines)
-            implementation(libs.mordant)
+        sourceSets {
+            getByName("wasmJsMain").dependencies {
+                implementation(project(":$releaseArtifact"))
+                implementation(libs.kotlinx.coroutines)
+                implementation(libs.mordant)
+            }
         }
     }
 }

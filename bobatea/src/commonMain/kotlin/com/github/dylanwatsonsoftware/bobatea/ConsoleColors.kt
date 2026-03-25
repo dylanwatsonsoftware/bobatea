@@ -1,7 +1,6 @@
 package com.github.dylanwatsonsoftware.bobatea
 
 import com.github.ajalt.mordant.rendering.AnsiLevel
-import com.github.ajalt.mordant.rendering.Size
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.ajalt.mordant.terminal.PrintRequest
@@ -12,10 +11,11 @@ import com.github.ajalt.mordant.terminal.TerminalInterface
 class ConsoleColors {
     private class AnsiTerminalInterface : TerminalInterface {
         override fun completePrintRequest(request: PrintRequest) {}
-        override fun info(ansiLevel: AnsiLevel?, hyperlinks: Boolean?, outputInteractive: Boolean?, inputInteractive: Boolean?): TerminalInfo {
-            return TerminalInfo(ansiLevel = AnsiLevel.TRUECOLOR, ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, supportsAnsiCursor = true)
-        }
-        override fun getTerminalSize(): Size? = Size(80, 24)
+        override val info: TerminalInfo = TerminalInfo(
+            width = 80, height = 24,
+            ansiLevel = AnsiLevel.TRUECOLOR,
+            ansiHyperLinks = false, outputInteractive = true, inputInteractive = true, crClearsLine = false
+        )
         override fun readLineOrNull(hideInput: Boolean): String? = null
     }
 
