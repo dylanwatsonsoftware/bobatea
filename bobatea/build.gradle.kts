@@ -27,7 +27,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines)
-            implementation(libs.mordant)
+            api(libs.mordant)
         }
         jvmTest.dependencies {
             implementation(kotlin("test-junit"))
