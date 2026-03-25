@@ -1,5 +1,5 @@
 import com.vanniktech.maven.publish.JavadocJar
-import com.vanniktech.maven.publish.KotlinJvm
+import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishBasePlugin
 import com.vanniktech.maven.publish.SonatypeHost
@@ -38,7 +38,7 @@ subprojects {
     }
     plugins.withType<MavenPublishBasePlugin> {
         configure<MavenPublishBaseExtension> {
-            configure(KotlinJvm(JavadocJar.Dokka("dokkaJavadoc")))
+            configure(KotlinMultiplatform(JavadocJar.Empty()))
             //publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
             //signAllPublications()
             pom {
