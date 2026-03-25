@@ -81,8 +81,8 @@ tasks {
     }
 }
 
-// Node.js v18 is the last version built against glibc 2.17 (CentOS 7).
-// JitPack's build environment only has glibc 2.17, so v22 (the Kotlin 2.x default) fails.
+// JitPack's environment only has glibc 2.17 (CentOS 7).
+// Node.js 18+ requires glibc 2.25+; Node.js 16.x is the last series built against glibc 2.17.
 plugins.withType<NodeJsRootPlugin> {
-    the<NodeJsRootExtension>().nodeVersion = "18.18.2"
+    the<NodeJsRootExtension>().nodeVersion = "16.20.2"
 }

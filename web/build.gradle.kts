@@ -6,16 +6,20 @@ plugins {
     kotlin("multiplatform")
 }
 
+val isJitPack = System.getenv("JITPACK") != null
+
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "bobatea-web"
-        browser {
-            commonWebpackConfig {
-                outputFileName = "bobatea-web.js"
+    if (!isJitPack) {
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmJs {
+            moduleName = "bobatea-web"
+            browser {
+                commonWebpackConfig {
+                    outputFileName = "bobatea-web.js"
+                }
             }
+            binaries.executable()
         }
-        binaries.executable()
     }
 
     sourceSets {

@@ -22,10 +22,7 @@ kotlin {
     jvm()
 
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
+    wasmJs()
 
     sourceSets {
         commonMain.dependencies {

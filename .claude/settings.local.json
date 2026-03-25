@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :bobatea:tasks --group publishing)",
+      "Bash(./gradlew :bobatea:build --no-daemon -q)",
+      "Bash(./gradlew :bobatea:publishToMavenLocal --dry-run)",
+      "Bash(./gradlew :bobatea:publishToMavenLocal)"
+    ]
+  }
+}
