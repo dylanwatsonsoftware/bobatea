@@ -1,4 +1,4 @@
 {
-  "outputDirectory": "web/build/dist/wasmJs/productionExecutable",
-  "buildCommand": "./gradlew :web:wasmJsBrowserDistribution"
+  "outputDirectory": "web/build/dist/wasmJs/developmentExecutable",
+  "buildCommand": "./gradlew :web:wasmJsBrowserDevelopmentWebpack"
 }
