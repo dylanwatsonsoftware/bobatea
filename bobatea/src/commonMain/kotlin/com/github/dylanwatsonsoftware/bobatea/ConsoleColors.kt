@@ -42,6 +42,14 @@ class ConsoleColors {
         val CYAN: String = styleToString(TextColors.cyan)
         val WHITE: String = styleToString(TextColors.white)
 
+        // Bubble Tea style colors
+        val BOBA_PINK: String = styleToString(TextColors.rgb("#F179B4"))
+        val BOBA_CYAN: String = styleToString(TextColors.rgb("#00D7FF"))
+        val BOBA_GREEN: String = styleToString(TextColors.rgb("#A7FF00"))
+        val BOBA_YELLOW: String = styleToString(TextColors.rgb("#FFD700"))
+        val BOBA_PURPLE: String = styleToString(TextColors.rgb("#AF87FF"))
+        val BOBA_GRAY: String = styleToString(TextColors.rgb("#808080"))
+
         // Bold
         val BLACK_BOLD: String = styleToString(TextColors.black + TextStyles.bold)
         val RED_BOLD: String = styleToString(TextColors.red + TextStyles.bold)

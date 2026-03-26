@@ -41,49 +41,38 @@ class ExpandableComponent(
         result.append("Press ${color("SPACE/ENTER", GREEN)} or ${color("CLICK", GREEN)} to toggle\n")
         result.append("Press ${color("Q", GREEN)} to exit")
 
-        return wrapInBox(result.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val output = wrapInBox(result.toString().trimEnd('\n'), availableWidth, availableHeight)
+        val lines = output.lines()
+        widthPx = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        heightPx = lines.size
+        return output
     }
 
-    suspend fun interact(terminal: Terminal) {
-        val (availableWidth, availableHeight) = terminal.size()
-        val titleLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
-
-        fun printExpandable() {
-            terminal.clear()
-            terminal.write(render(availableWidth, availableHeight) + "\n")
-        }
-
-        printExpandable()
-
-        terminal.enableMouseTracking(allMotion = true)
-        try {
-            while (true) {
-                when (val event = terminal.readEvent()) {
-                    is BobaEvent.Key -> {
-                        when (event.code) {
-                            SPACE.key, ENTER.key -> {
-                                expanded = !expanded
-                                printExpandable()
-                            }
-                            'q'.code, 'Q'.code -> return
-                        }
-                    }
-                    is BobaEvent.Mouse -> {
-                        val currentlyHovered = event.y == titleLine + 1 && event.x <= title.length + 4
-                        if (currentlyHovered != isHovered) {
-                            isHovered = currentlyHovered
-                            printExpandable()
-                        }
-
-                        if (event.action == MouseAction.PRESS && event.button < 64 && currentlyHovered) {
-                            expanded = !expanded
-                            printExpandable()
-                        }
+    override fun onEvent(event: BobaEvent): Boolean {
+        val titleLine = getContentStartY()
+        val titleStart = getContentStartX()
+        when (event) {
+            is BobaEvent.Key -> {
+                when (event.code) {
+                    SPACE.key, ENTER.key -> {
+                        expanded = !expanded
+                        return true
                     }
                 }
             }
-        } finally {
-            terminal.disableMouseTracking()
+            is BobaEvent.Mouse -> {
+                val currentlyHovered = event.y == titleLine && event.x >= titleStart && event.x < titleStart + title.length + 4
+                if (currentlyHovered != isHovered) {
+                    isHovered = currentlyHovered
+                    return true
+                }
+
+                if (event.action == MouseAction.PRESS && event.button < 64 && currentlyHovered) {
+                    expanded = !expanded
+                    return true
+                }
+            }
         }
+        return false
     }
 }

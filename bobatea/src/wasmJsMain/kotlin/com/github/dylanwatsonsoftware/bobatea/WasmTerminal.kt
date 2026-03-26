@@ -6,6 +6,7 @@ import com.github.ajalt.mordant.terminal.Terminal as MordantTerminal
 import com.github.ajalt.mordant.terminal.TerminalInfo
 import com.github.ajalt.mordant.terminal.TerminalInterface
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withTimeoutOrNull
 
 private val _inputChannel = Channel<String>(Channel.UNLIMITED)
 
@@ -58,9 +59,11 @@ class WasmTerminal(
         }
     }
 
-    override suspend fun readEvent(): BobaEvent {
-        val data = _inputChannel.receive()
-        return parseInput(data)
+    override suspend fun readEvent(timeoutMs: Long): BobaEvent? {
+        val data = withTimeoutOrNull(timeoutMs) {
+            _inputChannel.receive()
+        }
+        return data?.let { parseInput(it) }
     }
 
     override fun enableMouseTracking(allMotion: Boolean) {

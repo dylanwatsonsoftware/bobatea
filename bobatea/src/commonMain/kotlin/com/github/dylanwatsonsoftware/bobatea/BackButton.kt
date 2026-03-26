@@ -11,20 +11,34 @@ class BackButton(
     override var width: Dimension = Dimension.Auto,
     override var maxWidth: Dimension = Dimension.Auto,
     override var height: Dimension = Dimension.Auto,
-    override var maxHeight: Dimension = Dimension.Auto
+    override var maxHeight: Dimension = Dimension.Auto,
+    val onClicked: () -> Unit = {}
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
 
     override fun render(availableWidth: Int?, availableHeight: Int?): String {
         val text = " [ ← Back (q) ] "
         val styled = (TextColors.red.bg + TextColors.white + TextStyles.bold)(text)
-        return wrapInBox(styled, availableWidth, availableHeight)
+        val result = wrapInBox(styled, availableWidth, availableHeight)
+        val lines = result.lines()
+        widthPx = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        heightPx = lines.size
+        return result
     }
 
-    fun isClicked(event: BobaEvent.Mouse, xOffset: Int, yOffset: Int): Boolean {
-        val textLength = 16 // " [ ← Back (q) ] ".length
-        return event.action == MouseAction.PRESS &&
-               event.y == yOffset &&
-               event.x >= xOffset &&
-               event.x <= xOffset + textLength
+    override fun onEvent(event: BobaEvent): Boolean {
+        if (event is BobaEvent.Key && (event.code == 'q'.code || event.code == 'Q'.code)) {
+            onClicked()
+            return true
+        }
+        if (event is BobaEvent.Mouse && event.action == MouseAction.PRESS) {
+            val textLength = 16 // " [ ← Back (q) ] ".length
+            val startX = getContentStartX()
+            val startY = getContentStartY()
+            if (event.y == startY && event.x >= startX && event.x < startX + textLength) {
+                onClicked()
+                return true
+            }
+        }
+        return false
     }
 }

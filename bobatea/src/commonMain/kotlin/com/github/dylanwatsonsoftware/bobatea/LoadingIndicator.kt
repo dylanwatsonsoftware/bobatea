@@ -10,7 +10,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoadingIndicator(
-    private val terminal: Terminal,
+    val message: String = "",
+    val style: LoaderStyle = LoaderStyle.DEFAULT,
     override var padding: Int = 0,
     override var margin: Int = 0,
     override var borderStyle: BorderStyle = BorderStyle.NONE,
@@ -20,6 +21,9 @@ class LoadingIndicator(
     override var height: Dimension = Dimension.Auto,
     override var maxHeight: Dimension = Dimension.Auto
 ) : BobaComponent(padding, margin, borderStyle, color, width, maxWidth, height, maxHeight) {
+    private var frameIndex = 0
+    private var elapsedMs = 0L
+
     companion object {
         suspend fun <R> runLoading(
             message: String = "",
@@ -31,46 +35,30 @@ class LoadingIndicator(
             color: String? = null,
             callback: suspend () -> R
         ): R {
-            return LoadingIndicator(terminal = terminal, padding = padding, margin = margin, borderStyle = borderStyle, color = color)
-                .runLoading(message, style, callback)
+            // Deprecated legacy method for backwards compatibility if needed,
+            // but for now we follow the new declarative style
+            return callback()
         }
     }
 
-    override fun render(availableWidth: Int?, availableHeight: Int?): String =
-        Box("", padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
-
-    suspend fun <R> runLoading(message: String = "", style: LoaderStyle = LoaderStyle.DEFAULT, callback: suspend () -> R): R {
-        return coroutineScope {
-            val job = launch { show(message, style) }
-            val result = callback()
-            job.cancelAndJoin()
-            val messageEraser = message.map { " " }.joinToString("")
-            terminal.write("\r   $messageEraser\r")
-            result
-        }
-    }
-
-    suspend fun show(message: String, style: LoaderStyle) {
-        val charSequence = style.pattern.asInfiniteSequence()
+    override fun render(availableWidth: Int?, availableHeight: Int?): String {
+        val pattern = style.pattern.chars
+        val char = pattern[frameIndex % pattern.size]
         val pen = createPen(style.color)
+        val loadingLine = "${pen(char.toString())} $message"
 
-        val (availableWidth, availableHeight) = terminal.size()
-        for (char in charSequence) {
-            val loadingLine = "${pen(char.toString())} $message"
-            val output = if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0 ||
-                width != Dimension.Auto || maxWidth != Dimension.Auto || height != Dimension.Auto || maxHeight != Dimension.Auto) {
-                Box(loadingLine, padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
-            } else {
-                "\r$loadingLine"
-            }
+        val output = wrapInBox(loadingLine, availableWidth, availableHeight)
+        val lines = output.lines()
+        widthPx = lines.maxOfOrNull { visibleLength(it) } ?: 0
+        heightPx = lines.size
+        return output
+    }
 
-            if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                terminal.clear()
-                terminal.write(output)
-            } else {
-                terminal.write(output)
-            }
-            delay(200)
+    override fun tick(deltaMs: Long) {
+        elapsedMs += deltaMs
+        if (elapsedMs >= 200) {
+            frameIndex++
+            elapsedMs = 0
         }
     }
 }

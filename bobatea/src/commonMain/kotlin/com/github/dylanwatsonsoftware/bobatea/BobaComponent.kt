@@ -20,6 +20,11 @@ abstract class BobaComponent(
     open var height: Dimension = Dimension.Auto,
     open var maxHeight: Dimension = Dimension.Auto
 ) {
+    var x: Int = 0
+    var y: Int = 0
+    var widthPx: Int = 0
+    var heightPx: Int = 0
+
     companion object {
         val ANSI_REGEX = Regex("\u001b\\[[0-9;?]*[a-zA-Z]|\u001b\\][^\u0007]*\u0007")
 
@@ -56,6 +61,10 @@ abstract class BobaComponent(
 
     abstract fun render(availableWidth: Int? = null, availableHeight: Int? = null): String
 
+    open fun onEvent(event: BobaEvent): Boolean = false
+
+    open fun tick(deltaMs: Long) {}
+
     protected fun getMordant(): MordantTerminal {
         return dummyTerminal
     }
@@ -68,4 +77,7 @@ abstract class BobaComponent(
         }
         return Box(content, padding, margin, borderStyle, color, width, maxWidth, height, maxHeight).render(availableWidth, availableHeight)
     }
+
+    protected fun getContentStartX(): Int = x + margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
+    protected fun getContentStartY(): Int = y + margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 }
