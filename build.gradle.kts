@@ -1,6 +1,8 @@
 import com.vanniktech.maven.publish.JavadocJar
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishBasePlugin
@@ -85,4 +87,8 @@ tasks {
 // Node.js 18+ requires glibc 2.25+; Node.js 16.x is the last series built against glibc 2.17.
 plugins.withType<NodeJsRootPlugin> {
     the<NodeJsRootExtension>().nodeVersion = "16.20.2"
+}
+
+plugins.withType<YarnPlugin> {
+    the<YarnRootExtension>().yarnLockAutoReplace = true
 }
