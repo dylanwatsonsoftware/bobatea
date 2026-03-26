@@ -4,7 +4,12 @@
       "Bash(./gradlew :bobatea:tasks --group publishing)",
       "Bash(./gradlew :bobatea:build --no-daemon -q)",
       "Bash(./gradlew :bobatea:publishToMavenLocal --dry-run)",
-      "Bash(./gradlew :bobatea:publishToMavenLocal)"
+      "Bash(./gradlew :bobatea:publishToMavenLocal)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:ajalt.github.io)",
+      "WebSearch"
     ]
   }
 }

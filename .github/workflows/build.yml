@@ -10,5 +10,9 @@ jobs:
       uses: actions/checkout@v4
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Build library
+      run: ./gradlew :bobatea:build :sample:build
+    - name: Build web showcase
+      # Use development webpack — Kotlin 1.9.x's production wasmJs compiler path has a
+      # known NPE. The development bundle is fully functional for a demo/showcase app.
+      run: ./gradlew :web:wasmJsBrowserDevelopmentWebpack

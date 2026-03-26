@@ -22,7 +22,14 @@ kotlin {
     jvm()
 
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs()
+    wasmJs {
+        // browser() is needed locally and on GitHub CI so that dependent projects
+        // (e.g. :web) can resolve this as a browser-compatible wasmJs dependency.
+        // Skipped on JitPack because its glibc 2.17 can't run any modern Node.js binary.
+        if (System.getenv("JITPACK") == null) {
+            browser()
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
