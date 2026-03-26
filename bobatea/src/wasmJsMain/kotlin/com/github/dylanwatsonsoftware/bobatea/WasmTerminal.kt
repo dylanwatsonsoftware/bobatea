@@ -58,6 +58,11 @@ class WasmTerminal(
         }
     }
 
+    override fun redraw(text: String) {
+        mordant.cursor.move { setPosition(0, 0) }
+        mordant.rawPrint(text + "\u001b[J")
+    }
+
     override suspend fun readEvent(): BobaEvent {
         val data = _inputChannel.receive()
         return parseInput(data)

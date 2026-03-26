@@ -46,6 +46,11 @@ class JvmTerminal(
         }
     }
 
+    override fun redraw(text: String) {
+        mordant.cursor.move { setPosition(0, 0) }
+        mordant.rawPrint(text + "\u001b[J")
+    }
+
     override suspend fun readEvent(): BobaEvent = withContext(Dispatchers.IO) {
         readEventBlocking()
     }

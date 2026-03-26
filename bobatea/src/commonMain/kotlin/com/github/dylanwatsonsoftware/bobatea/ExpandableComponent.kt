@@ -49,8 +49,7 @@ class ExpandableComponent(
         val titleLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding
 
         fun printExpandable() {
-            terminal.clear()
-            terminal.write(render(availableWidth, availableHeight) + "\n")
+            terminal.redraw(render(availableWidth, availableHeight) + "\n")
         }
 
         printExpandable()

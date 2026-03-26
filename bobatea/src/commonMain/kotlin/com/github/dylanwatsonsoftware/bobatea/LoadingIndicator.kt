@@ -65,8 +65,7 @@ class LoadingIndicator(
             }
 
             if (borderStyle != BorderStyle.NONE || padding > 0 || margin > 0) {
-                terminal.clear()
-                terminal.write(output)
+                terminal.redraw(output)
             } else {
                 terminal.write(output)
             }

@@ -41,8 +41,7 @@ class SelectionList(
         val startLine = margin + (if (borderStyle != BorderStyle.NONE) 1 else 0) + padding + 1 // +1 for the question line
 
         fun printList() {
-            terminal.clear()
-            terminal.write(render(availableWidth, availableHeight) + "\n")
+            terminal.redraw(render(availableWidth, availableHeight) + "\n")
         }
 
         printList()
