@@ -1,32 +1,24 @@
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-
-val releaseArtifact: String by project
-
 plugins {
-    kotlin("multiplatform")
+    kotlin("multiplatform") version "2.0.21"
 }
 
-val isJitPack = System.getenv("JITPACK") != null
-
 kotlin {
-    if (!isJitPack) {
-        @OptIn(ExperimentalWasmDsl::class)
-        wasmJs {
-            moduleName = "bobatea-web"
-            browser {
-                commonWebpackConfig {
-                    outputFileName = "bobatea-web.js"
-                }
+    wasmJs {
+        moduleName = "bobatea-web"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "bobatea-web.js"
             }
-            binaries.executable()
         }
+        binaries.executable()
+    }
 
-        sourceSets {
-            getByName("wasmJsMain").dependencies {
-                implementation(project(":$releaseArtifact"))
-                implementation(libs.kotlinx.coroutines)
-                implementation(libs.mordant)
-            }
+    sourceSets {
+        wasmJsMain.dependencies {
+            // Substituted by :bobatea from the root composite build
+            implementation("io.github.dylanwatsonsoftware:bobatea")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+            implementation("com.github.ajalt.mordant:mordant:2.6.0")
         }
     }
 }

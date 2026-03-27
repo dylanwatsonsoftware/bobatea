@@ -85,8 +85,10 @@ tasks {
 
 // JitPack's environment only has glibc 2.17 (CentOS 7).
 // Node.js 18+ requires glibc 2.25+; Node.js 16.x is the last series built against glibc 2.17.
+// Kotlin WASM requires Node.js 18+ outside of JitPack.
 plugins.withType<NodeJsRootPlugin> {
-    the<NodeJsRootExtension>().nodeVersion = "16.20.2"
+    val isJitPack = System.getenv("JITPACK") != null
+    the<NodeJsRootExtension>().nodeVersion = if (isJitPack) "16.20.2" else "22.0.0"
 }
 
 plugins.withType<YarnPlugin> {
